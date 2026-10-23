@@ -325,14 +325,19 @@ async function canRevealInExplorerPath({
   return true;
 }
 
+function normalizeFolderPath(value) {
+  const resolved = path.resolve(value);
+  return process.platform === 'win32' ? resolved.toLowerCase() : resolved;
+}
+
 function isFolderInsideSync(childFolder, parentFolder) {
-  const child = path.resolve(childFolder).toLowerCase();
-  const parent = path.resolve(parentFolder).toLowerCase();
+  const child = normalizeFolderPath(childFolder);
+  const parent = normalizeFolderPath(parentFolder);
   return child !== parent && child.startsWith(parent + path.sep);
 }
 
 function isSameFolderSync(a, b) {
-  return path.resolve(a).toLowerCase() === path.resolve(b).toLowerCase();
+  return normalizeFolderPath(a) === normalizeFolderPath(b);
 }
 
 function isMissingPathError(err) {

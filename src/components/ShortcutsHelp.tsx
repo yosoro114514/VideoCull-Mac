@@ -1,3 +1,4 @@
+import { IS_MAC } from '../platform';
 import { X } from 'lucide-react';
 import useStore from '../store';
 import { ALL_SHORTCUTS, FIXED_SHORTCUTS, formatKeybind, type ShortcutGroup } from '../keybinds';
@@ -52,9 +53,9 @@ export default function ShortcutsHelp({ onClose }: Props) {
                     {fixed.map((s, i) => (
                       <tr key={i}>
                         <td className="shortcuts-keys">
-                          {s.keys.map((k) => <kbd key={k}>{k}</kbd>)}
+                          {s.keys.map((k) => <kbd key={k}>{IS_MAC ? k.replace('Ctrl', '⌘').replace('Alt', '⌥') : k}</kbd>)}
                         </td>
-                        <td className="shortcuts-desc">{s.description}</td>
+                        <td className="shortcuts-desc">{IS_MAC ? s.description.replace('Explorer', 'Finder') : s.description}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -65,7 +66,7 @@ export default function ShortcutsHelp({ onClose }: Props) {
         </div>
 
         <p className="shortcuts-hint">
-          All shortcuts can be changed in <strong>Settings → Keybindings</strong> (Ctrl+,)
+          All shortcuts can be changed in <strong>Settings → Keybindings</strong> ({IS_MAC ? '⌘' : 'Ctrl'}+,)
         </p>
       </div>
     </div>

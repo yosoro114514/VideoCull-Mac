@@ -1,3 +1,4 @@
+import { IS_MAC } from './platform';
 import type { FolderFilter, Video } from './types';
 
 /**
@@ -24,7 +25,7 @@ export function formatDeleteConfirmation({
   const folderDetail = removeEmptyFoldersAfterDelete
     ? ' Empty source folders will be cleaned up when they are truly empty.'
     : ' Empty source folders will not be removed.';
-  return `Move ${count} ${videoLabel} (${formatSize(sizeBytes)}) to the Recycle Bin? If the Recycle Bin is unavailable, VideoCull will ask before permanently deleting.${folderDetail}`;
+  return `Move ${count} ${videoLabel} (${formatSize(sizeBytes)}) to the ${IS_MAC ? 'Trash' : 'Recycle Bin'}? If the ${IS_MAC ? 'Trash' : 'Recycle Bin'} is unavailable, VideoCull will ask before permanently deleting.${folderDetail}`;
 }
 
 /**
@@ -227,7 +228,9 @@ const normalizedFolders = new Map<string, string>();
 export function normalizeFolder(value: string): string {
   let normalized = normalizedFolders.get(value);
   if (normalized === undefined) {
-    normalized = value.replace(/[\\/]+/g, '\\').replace(/\\$/, '').toLowerCase();
+    normalized = value.startsWith('/')
+      ? value.replace(/\/+$/, '') || '/'
+      : value.replace(/[\\/]+/g, '\\').replace(/\\$/, '').toLowerCase();
     normalizedFolders.set(value, normalized);
   }
   return normalized;
@@ -236,7 +239,7 @@ export function normalizeFolder(value: string): string {
 /** Tests whether a folder is `ancestor` or lies below it; Windows paths, so case and separators do not matter. */
 export function folderInsideTest(ancestor: string): (folder: string) => boolean {
   const base = normalizeFolder(ancestor);
-  const prefix = `${base}\\`;
+  const prefix = base === '/' ? '/' : `${base}${base.startsWith('/') ? '/' : '\\'}`;
   return (folder) => {
     const target = normalizeFolder(folder);
     return target === base || target.startsWith(prefix);

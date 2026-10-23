@@ -1,16 +1,16 @@
-# Contributing to VideoCull
+# Contributing to VideoCull Mac (unofficial)
 
-Thanks for helping make VideoCull better. Bug reports, ideas, documentation fixes, and code are all welcome.
+This community fork is maintained by @yosoro114514. Original VideoCull is by @StippieDot. Please send Mac-fork reports and pull requests here, not to the upstream project. Bug reports, ideas, documentation fixes, and code are all welcome.
 
 ## Reporting bugs and suggesting features
 
-[Open an issue](https://github.com/StippieDot/VideoCull/issues). Reports from large, messy collections are especially useful. For security problems, do not open a public issue; follow the [security policy](SECURITY.md) instead.
+[Open an issue](https://github.com/yosoro114514/VideoCull-Mac/issues). Reports from large, messy collections are especially useful. For security problems, do not open a public issue; follow the [security policy](SECURITY.md) instead.
 
 ## Contributing code
 
 1. For anything bigger than a small fix, open an issue first so we can agree on the approach before you spend time on it.
 2. Fork the repository and create a branch for your change.
-3. Follow the setup in [Building from Source](../README.md#building-from-source), and run `npm run test:ci` before you push.
+3. Follow the setup in [Building from Source](../README.en.md#build-from-source), and run `npm run test:mac` and `npm run test:mac:e2e` before you push.
 4. Open a pull request that explains what changed and why.
 
 ## Licensing of contributions

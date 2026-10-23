@@ -1,3 +1,4 @@
+import { IS_MAC } from '../platform';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Moon, Pause, Play, Power, Search, Trash2 } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
@@ -222,7 +223,7 @@ function ProcessingStatus({ status, jobs, paused, pauseStatus, canPause, power, 
       disabled: pauseStatus === 'pausing',
       onSelect: () => void window.electronAPI?.setProcessingPaused(!paused),
     }] : []),
-    ...(power.processing ? [
+    ...(power.processing && !IS_MAC ? [
       { type: 'separator' as const, key: 'sep-finish' },
       { type: 'heading' as const, key: 'finish', label: 'When processing finishes' },
       ...FINISH_ACTIONS.map(([action, label]): AppMenuItem => ({
@@ -324,10 +325,10 @@ export default function TitleBar({ isPrivate, onOpenCommandPalette, locationActi
       : `${formatRecentPath(directories[0])} + ${directories.length - 1} more`;
 
   return (
-    <header className="title-bar">
+    <header className={`title-bar${IS_MAC ? " title-bar-mac" : ""}`}>
       <div className="title-bar-start">
         <img className="title-bar-icon" src={videoCullIcon} alt="" draggable={false} />
-        <AppMenuButtons />
+        {!IS_MAC && <AppMenuButtons />}
       </div>
       <div className="title-bar-center">
         {isPrivate ? (
@@ -353,7 +354,7 @@ export default function TitleBar({ isPrivate, onOpenCommandPalette, locationActi
             type="button"
             className="title-bar-marked"
             disabled={processingInputs.isScanning}
-            title={`Delete ${plural(marked.count, 'marked video')} (${formatSize(marked.size)})… (Ctrl+Backspace)`}
+            title={`Delete ${plural(marked.count, 'marked video')} (${formatSize(marked.size)})… (${IS_MAC ? '⌘' : 'Ctrl'}+Backspace)`}
             aria-label={`Delete ${plural(marked.count, 'marked video')}`}
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => void runAppCommand('Actions > Delete Marked Videos')}
@@ -367,7 +368,7 @@ export default function TitleBar({ isPrivate, onOpenCommandPalette, locationActi
           <button
             type="button"
             className="title-bar-icon-button"
-            title="Find a command, folder or video (Ctrl+K)"
+            title={`Find a command, folder or video (${IS_MAC ? '⌘' : 'Ctrl'}+K)`}
             aria-label="Quick open"
             onMouseDown={(event) => event.preventDefault()}
             onClick={onOpenCommandPalette}

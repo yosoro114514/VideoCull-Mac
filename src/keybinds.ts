@@ -1,3 +1,5 @@
+import { IS_MAC } from './platform';
+
 // ── Keybind data type ──────────────────────────────────────────────
 export interface Keybind {
   readonly key: string;    // KeyboardEvent.key, lowercased (e.g. 'k', 'arrowleft', ' ')
@@ -98,10 +100,11 @@ export function kb(
 }
 
 // ── Match a KeyboardEvent against a stored Keybind ─────────────────
-export function matchesKeybind(event: KeyboardEvent, bind: Keybind): boolean {
+export function matchesKeybind(event: KeyboardEvent, bind: Keybind, isMac = IS_MAC): boolean {
   return (
     event.key.toLowerCase() === bind.key &&
-    event.ctrlKey  === bind.ctrl  &&
+    (isMac ? Boolean(event.metaKey) : event.ctrlKey) === bind.ctrl &&
+    !(isMac ? event.ctrlKey : event.metaKey) &&
     event.shiftKey === bind.shift &&
     event.altKey   === bind.alt
   );
@@ -114,11 +117,11 @@ export function keybindsEqual(a: Keybind, b: Keybind): boolean {
 
 // ── Build a Keybind from a KeyboardEvent (for recording) ───────────
 // Returns null if only a modifier key was pressed (nothing to record yet).
-export function keybindFromEvent(event: KeyboardEvent): Keybind | null {
+export function keybindFromEvent(event: KeyboardEvent, isMac = IS_MAC): Keybind | null {
   if (['control', 'shift', 'alt', 'meta'].includes(event.key.toLowerCase())) return null;
   return {
     key:   event.key.toLowerCase(),
-    ctrl:  event.ctrlKey,
+    ctrl:  isMac ? Boolean(event.metaKey) : event.ctrlKey,
     shift: event.shiftKey,
     alt:   event.altKey,
   };
@@ -127,7 +130,7 @@ export function keybindFromEvent(event: KeyboardEvent): Keybind | null {
 // ── Format a Keybind for display ───────────────────────────────────
 export function formatKeybind(bind: Keybind): string {
   const parts: string[] = [];
-  if (bind.ctrl)  parts.push('Ctrl');
+  if (bind.ctrl)  parts.push(IS_MAC ? '⌘' : 'Ctrl');
   if (bind.shift) parts.push('Shift');
   if (bind.alt)   parts.push('Alt');
   parts.push(formatKeyName(bind.key));
@@ -178,7 +181,7 @@ export function findConflict(
   }
 
   // Fixed shortcuts are taken by the menu or the window before a configurable binding can fire.
-  const pressed = formatKeybind(currentBind).replace('←', 'Left').replace('→', 'Right').toLowerCase();
+  const pressed = formatKeybind(currentBind).replace('⌘', 'Ctrl').replace('←', 'Left').replace('→', 'Right').toLowerCase();
   const fixed = FIXED_SHORTCUTS.find((shortcut) => (
     (shortcut.group === 'Global' || shortcut.group === currentDef.group)
     && shortcut.keys.some((keys) => keys.toLowerCase() === pressed)

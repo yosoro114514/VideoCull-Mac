@@ -21,6 +21,7 @@ function subscribe(channel, callback) {
 
 /** @type {import('../src/types').ElectronAPI} */
 const electronAPI = {
+  platform: process.platform,
   initialTheme: initialTheme,
   usesMica: usesMica,
   micaSupported: micaSupported,

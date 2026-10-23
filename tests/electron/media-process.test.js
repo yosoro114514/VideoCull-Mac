@@ -24,14 +24,14 @@ describe('frame extraction arguments', () => {
 
   test('default: thread limit on, no hardware acceleration', () => {
     assert.deepEqual(processor.__test.buildFrameArgs(input, 12.5, output, {}), [
-      '-ss', '12.5', '-i', input, '-y', '-vframes', '1', '-filter:v', 'scale=320:-1', '-q:v', '5',
+      '-ss', '12.5', ...(process.platform === 'darwin' ? ['-threads', '4'] : []), '-i', input, '-y', '-vframes', '1', '-filter:v', 'scale=320:-1', '-q:v', '5',
       '-threads', '1', output,
     ]);
   });
 
   test('hardware acceleration goes before the input', () => {
     assert.deepEqual(processor.__test.buildFrameArgs(input, 0, output, { hardwareAccel: true }), [
-      '-ss', '0', '-hwaccel', 'auto', '-i', input, '-y', '-vframes', '1', '-filter:v', 'scale=320:-1',
+      '-ss', '0', '-hwaccel', 'auto', ...(process.platform === 'darwin' ? ['-threads', '4'] : []), '-i', input, '-y', '-vframes', '1', '-filter:v', 'scale=320:-1',
       '-q:v', '5', '-threads', '1', output,
     ]);
   });

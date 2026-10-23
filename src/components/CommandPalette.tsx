@@ -1,3 +1,4 @@
+import { IS_MAC, primaryModifier } from '../platform';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Search } from 'lucide-react';
 import useStore, { videosOutsideFolderFilter } from '../store';
@@ -20,7 +21,7 @@ let recentPicks: string[] = [];
 /** Electron accelerator text as people know it: "CmdOrCtrl+Plus" becomes "Ctrl++". */
 export function formatAccelerator(accelerator: string): string {
   return accelerator
-    .replace(/CmdOrCtrl|CommandOrControl/g, 'Ctrl')
+    .replace(/CmdOrCtrl|CommandOrControl/g, IS_MAC ? '⌘' : 'Ctrl')
     .replace(/Plus/g, '+')
     .replace(/Escape/g, 'Esc')
     .replace(/Comma/g, ',');
@@ -175,7 +176,7 @@ function buildRows(query: string, { commands, folders, videos, directories }: Pa
         section: SECTION_TITLES.videos,
         label: video.filename,
         parent: splitLabel(getFolderLabel(video, directories)).join(' › '),
-        hint: 'Enter to select it in the grid · Ctrl+Enter to review it',
+        hint: `Enter to select it in the grid · ${IS_MAC ? '⌘' : 'Ctrl'}+Enter to review it`,
         run: ({ ctrl }) => {
           onClose();
           const state = useStore.getState();
@@ -247,7 +248,7 @@ export default function CommandPalette({ onClose, initialQuery = '' }: { onClose
       setActiveIndex((rows.length + safeIndex + step) % Math.max(1, rows.length));
     } else if (event.key === 'Enter') {
       event.preventDefault();
-      run(activeRow, { shift: event.shiftKey, ctrl: event.ctrlKey });
+      run(activeRow, { shift: event.shiftKey, ctrl: primaryModifier(event) });
     } else if (event.key === 'Escape') {
       event.preventDefault();
       event.stopPropagation();
@@ -290,7 +291,7 @@ export default function CommandPalette({ onClose, initialQuery = '' }: { onClose
                 aria-disabled={row.disabled || undefined}
                 className={`command-palette-item${index === safeIndex ? ' active' : ''}${row.disabled || row.muted ? ' disabled' : ''}`}
                 onMouseMove={() => setActiveIndex(index)}
-                onClick={(event) => run(row, { shift: event.shiftKey, ctrl: event.ctrlKey })}
+                onClick={(event) => run(row, { shift: event.shiftKey, ctrl: primaryModifier(event) })}
               >
                 <span className="command-palette-check">{row.checked && <Check size={13} />}</span>
                 <span className="command-palette-label">

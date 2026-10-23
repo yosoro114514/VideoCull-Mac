@@ -1,3 +1,4 @@
+import { primaryModifier } from '../platform';
 import { useState, useRef, useEffect } from 'react';
 import type { Video } from '../types';
 import useStore from '../store';
@@ -84,7 +85,7 @@ export default function VideoCard({ video, style, isSelected = false, showSelect
       onPlay(video, e);
       return;
     }
-    if (canPlayInReview && !e.ctrlKey) {
+    if (canPlayInReview && !primaryModifier(e)) {
       enterReviewAndPlay(video.id);
     } else if (window.electronAPI) {
       openVideoExternally(video.path);

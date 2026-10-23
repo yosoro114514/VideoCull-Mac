@@ -14,6 +14,30 @@ function isVideoFile(filename) {
   return VIDEO_EXTENSIONS.has(path.extname(filename).toLowerCase());
 }
 
+// TypeScript shares extensions with transport-stream video. Read only a small prefix;
+// reject clear text, but keep binary/unknown inputs for the normal media probe.
+async function isSourceText(filePath) {
+  let handle;
+  try {
+    handle = await fs.open(filePath, 'r');
+    const buffer = Buffer.alloc(8192);
+    const { bytesRead } = await handle.read(buffer, 0, buffer.length, 0);
+    const head = buffer.subarray(0, bytesRead);
+    if (!head.length) return false;
+    for (const stride of [188, 192, 204]) {
+      for (let i = 0; i + stride * 2 < head.length; i++) {
+        if (head[i] === 0x47 && head[i + stride] === 0x47 && head[i + stride * 2] === 0x47) return false;
+      }
+    }
+    const text = head.toString('utf8');
+    return !/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffd]/.test(text);
+  } catch {
+    return false; // Preserve unreadable files for the existing error/reporting path.
+  } finally {
+    await handle?.close();
+  }
+}
+
 function makeVideoId(filePath, sizeBytes) {
   return crypto.createHash('md5').update(`${filePath}:${sizeBytes}`).digest('hex').slice(0, 16);
 }
@@ -130,6 +154,11 @@ async function scanDirectory(dirPath, includeSubfolders, onProgress, options = {
       return; // Skip inaccessible directories
     }
     assertNotCancelled();
+    // Explicit opt-out also excludes this project's packaged copies and test assets.
+    if (entries.some((entry) => entry.name === '.videocull-ignore' && entry.isFile())) {
+      incompleteDirs.add(currentDir); // Do not prune saved decisions in excluded folders.
+      return;
+    }
     visitedDirs?.push(currentDir);
 
     let pendingVideoEntries = [];
@@ -159,7 +188,8 @@ async function scanDirectory(dirPath, includeSubfolders, onProgress, options = {
       const fullPath = path.join(currentDir, entry.name);
 
       // Skip our own cache/thumb directories
-      if (entry.isDirectory() && (entry.name === '.video-cull-thumbs' || entry.name === '.videocull' || entry.name === '.video-cull-cache.json')) {
+      if (entry.isDirectory() && (['.video-cull-thumbs', '.videocull', '.video-cull-cache.json', '.git', 'node_modules'].includes(entry.name) || entry.name.endsWith('.app'))) {
+        incompleteDirs.add(fullPath);
         continue;
       }
 
@@ -168,6 +198,10 @@ async function scanDirectory(dirPath, includeSubfolders, onProgress, options = {
         assertNotCancelled();
         await walk(fullPath);
       } else if (entry.isFile() && isVideoFile(entry.name)) {
+        if (/\.(?:ts|mts)$/i.test(entry.name) && await isSourceText(fullPath)) {
+          incompleteDirs.add(currentDir);
+          continue;
+        }
         pendingVideoEntries.push({ entryName: entry.name, fullPath });
         if (pendingVideoEntries.length >= SCAN_FILE_STAT_BATCH_SIZE) {
           await flushPendingVideoEntries();

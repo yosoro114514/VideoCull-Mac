@@ -1,0 +1,37 @@
+name: Mac checks
+
+on:
+  push:
+    branches: [mac]
+  pull_request:
+    branches: [mac]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mac-checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mac:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Confirm Apple Silicon runner
+        run: test "$(uname -m)" = arm64
+      - name: Install local media build dependency
+        run: brew list ffmpeg >/dev/null 2>&1 || brew install ffmpeg
+      - name: Install dependencies
+        run: npm ci
+      - name: Check types, IPC, core behaviour and native cache
+        run: npm run test:mac
+      - name: Check renderer and application workflows
+        run: npm run test:mac:e2e
+      # No upload or release step: public binary distribution is not prepared yet.

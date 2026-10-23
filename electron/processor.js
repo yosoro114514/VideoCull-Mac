@@ -33,6 +33,7 @@ function parseBitrate(value) {
  */
 async function getVideoMetadata(filePath, token = createRunToken()) {
   const stat = await fs.stat(filePath);
+  if (stat.size === 0) throw new Error('Empty video file (0 bytes)');
   const metadata = await mediaProcess.probe(filePath, token);
   const duration = Number(metadata.format.duration) || 0;
   const formatBitrate = parseBitrate(metadata.format.bit_rate);
@@ -223,6 +224,9 @@ function createQueueCursor(items) {
 function buildFrameArgs(videoPath, seekTime, outputPath, config) {
   const args = ['-ss', String(seekTime)];
   if (config.hardwareAccel) args.push('-hwaccel', 'auto');
+  // Decoder options belong before -i; the trailing -threads only limits JPEG encoding.
+  // Four decoder threads keeps long-GOP seeks fast without each Mac job claiming every core.
+  if (process.platform === 'darwin' && config.cpuThreadsLimited !== false) args.push('-threads', '4');
   args.push('-i', toFfmpegInputPath(videoPath), '-y', '-vframes', '1', '-filter:v', 'scale=320:-1', '-q:v', '5');
   // Limit CPU threads to prevent massive spikes when processing parallel
   if (config.cpuThreadsLimited !== false) args.push('-threads', '1');
@@ -281,6 +285,9 @@ async function extractFrame(videoPath, timestamp, outputPath, config, token, bud
  * Returns { thumbnails: string[], durationSecs: number }.
  */
 async function generateThumbnailsForVideo(video, thumbDir, config, token, options = {}) {
+  if (video.sizeBytes === 0 || (!options.forceRegenerate && video.metadataFailedAt)) {
+    return { thumbnails: video.thumbnails ?? [], durationSecs: video.durationSecs };
+  }
   const THUMB_COUNT = Math.max(1, Number(config.thumbsPerVideo) || 6);
   const skipDelay = config.skipIntroDelaySecs !== undefined ? config.skipIntroDelaySecs : 3;
 
@@ -409,6 +416,12 @@ async function readMetadataForVideo(video, token) {
 function getConcurrentLimit(config = {}) {
   if (config.maxConcurrent === 'auto') {
     const cpuCount = os.cpus().length || 4;
+    if (process.platform === 'darwin') {
+      // A conservative Mac budget. "Free" pages exclude reusable memory and often
+      // approach zero; using them as the sole limit made 16 GB Macs run serially.
+      const memoryBudget = os.totalmem() >= 16 * 1024 ** 3 ? 4 : 2;
+      return Math.max(1, Math.min(memoryBudget, Math.floor(cpuCount / 2)));
+    }
     const freeMemGb = os.freemem() / (1024 ** 3);
     const cpuBased = config.cpuThreadsLimited === false
       ? Math.max(1, Math.floor(cpuCount / 2))

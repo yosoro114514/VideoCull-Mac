@@ -1,256 +1,110 @@
-# VideoCull
-[![Release](https://img.shields.io/github/v/release/StippieDot/VideoCull?style=for-the-badge)](https://github.com/StippieDot/VideoCull/releases)
-[![License](https://img.shields.io/github/license/StippieDot/VideoCull?style=for-the-badge)](LICENSE)
-[![Platform](https://img.shields.io/badge/platform-Windows-0078D6?style=for-the-badge)](https://github.com/StippieDot/VideoCull/releases)
-[![Docs](https://img.shields.io/badge/docs-videocull.app-1f2937?style=for-the-badge&logo=readthedocs&logoColor=white)](https://docs.videocull.app)
-<a href="https://alternativeto.net/software/videocull/about/?utm_source=badge&amp;utm_medium=referral"><img src="https://alternativeto.net/static/badges/badge-compact-color.svg" alt="VideoCull | AlternativeTo" height="28" /></a>
+# VideoCull Mac — 非官方 Apple Silicon 分支
 
-> See what is inside a video folder before deciding what stays.
+[English](README.en.md) · [原项目](https://github.com/StippieDot/VideoCull) · [使用与构建详情](README_MAC.md) · [反馈问题](https://github.com/yosoro114514/VideoCull-Mac/issues)
 
-**[Website](https://videocull.app/) · [Documentation](https://docs.videocull.app/) · [Download](#download)**
+> 基于 **StippieDot 和原项目贡献者开发的 VideoCull**，由 [yosoro114514](https://github.com/yosoro114514) 维护的非官方 macOS 分支。本分支不代表原作者，也不是原项目的官方 Mac 发行版。
 
-VideoCull is a free, open-source Windows app for local video collections that are too large or messy to review file by file: downloaded videos, old archives and backups, external drives, screen recordings, and camera footage. It samples several frames from every video and lays them out in a grid, so you can identify clips without opening each one.
+用多帧预览快速了解本地视频，再决定保留、删除或跳过。适合整理积累的视频、录屏、相机素材和备份，不需要把视频上传到服务器。
 
-Make Keep, Delete, and Skip decisions from the grid or work through a focused keyboard queue. Play and scrub uncertain clips inside the app, add ratings or favorites, and find exact copies and visually similar videos as separate comparison groups.
+**当前状态：实验性源码版本 `2.4.0-mac.1`。** 已在 Apple Silicon / macOS 15 上验证；暂不发布预编译安装包。界面目前沿用英文。个人维护，欢迎反馈，但不承诺固定更新周期。
 
-The workflow stays local. Marking Delete only changes the review state. Files move to the Windows Recycle Bin when possible after you inspect and confirm the complete batch.
+## 能做什么
 
----
+- **视频网格与多帧预览**：默认从不同位置抽取六帧，显示时长、大小、编码和分辨率。
+- **内嵌播放**：播放、暂停、跳转；不兼容的媒体可以交给外部播放器。
+- **快速整理**：保留／标记删除／跳过，支持键盘操作和撤销整理决定。
+- **保存进度**：缓存预览和整理状态，重新打开原目录可继续处理。
+- **Mac 适配**：Command 快捷键、Finder、废纸篓、关窗隐藏和 Dock 恢复。
 
-## See VideoCull
+评分、收藏、过滤和重复视频比较等功能继承自上游；本分支的重点验证范围是上述核心整理流程。
 
-![VideoCull grid view in dark and light themes showing camera footage as multi-frame thumbnail strips](docs/readme/product-overview.webp)
+## 删除如何工作
 
-| Review uncertain clips | Compare likely duplicates |
+按 `D` **只标记待删除，不立即删除视频**。检查待删列表并确认批量删除后，应用才尝试移入废纸篓。如果移动失败，应用会单独询问是否永久删除；取消可以保留失败的文件。
+
+`Z` / `⌘Z` 撤销的是整理决定。已经移入废纸篓的文件请在 Finder 中恢复；永久删除无法通过应用撤销。
+
+## 相比上游的变化
+
+本分支从上游提交 [`c7eacd5`](https://github.com/StippieDot/VideoCull/commit/c7eacd5f0e87eff4874b55fc70cb914839353343)（2.4.0 开发线）开始，保留原 Git 历史。主要修改发生于 2026-10-22 至 2026-10-23，见 [修改与归属声明](NOTICE_MAC.md)。
+
+| 方向 | 修改 |
 | --- | --- |
-| ![VideoCull thumbnail and playback review views using Blender Open Movie footage](docs/readme/review-workflow.webp) | ![VideoCull duplicate review comparing Blender Open Movie files and suggested keepers](docs/readme/duplicate-review.webp) |
+| Apple Silicon | 原生 ARM64 FFmpeg/FFprobe、动态库路径处理、SQLite 与应用打包验证 |
+| 系统体验 | Mac 快捷键、窗口按钮、Dock 恢复、Finder 和废纸篓文案 |
+| 扫描性能 | 排除源码依赖目录；区分 `.ts` / `.mts` 文本源码与二进制视频 |
+| 无效文件 | 零字节文件不启动媒体探测，失败文件跳过常规预览生成 |
+| 大目录体验 | Mac 保守并发预算；大批任务优先生成首批最多 16 个文件的完整预览 |
+| 自用边界 | 集中缓存，关闭上游自动更新及处理后关机／休眠操作 |
 
-Demo footage shown in these screenshots includes [Blender Open Movies](https://studio.blender.org/films/), used under their applicable Creative Commons Attribution licenses.
+没有滚动视口动态优先队列；也不保证所有编码、媒体和存储设备都兼容。
 
----
+## 从源码运行
 
-## Download
+需要 **Apple Silicon Mac、macOS 15 或更新版本**，以及 Xcode 命令行工具、Homebrew、Node.js **24.21.0**。推荐 npm **11.19.0 或更新版本**。目前验证环境为 macOS 15；更新系统版本仍需测试。
 
-<a href="https://apps.microsoft.com/detail/9NG9Z0CL73PC?referrer=appbadge&amp;cid=videocull_github&amp;mode=full" target="_blank" rel="noopener noreferrer">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://get.microsoft.com/images/en-us%20light.svg" />
-    <img src="https://get.microsoft.com/images/en-us%20dark.svg" alt="Get VideoCull from Microsoft" width="200" />
-  </picture>
-</a>
+```sh
+# 首次配置开发环境；已安装的工具无需重复安装。
+xcode-select --install
+brew install ffmpeg
 
-VideoCull requires 64-bit Windows 10 version 22H2 (build 19045) or Windows 11. The Microsoft Store edition is installed and updated by Microsoft Store.
+# 克隆默认的 Mac 分支。
+git clone --branch mac https://github.com/yosoro114514/VideoCull-Mac.git
+cd VideoCull-Mac
 
-For a direct installation, download `VideoCull.Setup.<version>.exe` from [GitHub Releases](https://github.com/StippieDot/VideoCull/releases). It installs for the current user without administrator rights and lets you choose the install location and shortcuts. Because the direct installer is not code-signed yet, Windows may show a SmartScreen prompt on first launch; click **More info**, then **Run anyway** if you downloaded it from the official repository.
-
-The direct-download edition checks GitHub Releases for updates. Both editions share `%APPDATA%\VideoCull`, including settings, review decisions, databases, and the default thumbnail cache. Run only one edition at a time and keep both updated before switching. After confirming the Store edition works, you can uninstall the direct edition without deleting the shared profile or cache.
-
----
-
-## Features
-
-### Grid View
-
-Every video gets a strip of thumbnails pulled from different points in the file. You know what you're looking at without opening anything.
-
-- Adjustable card size (`Ctrl++` / `Ctrl+-`)
-- Search by filename or path (`Ctrl+F` by default, customizable)
-- Group by subfolder with per-folder counts and sizes
-- Filter by exact status, minimum rating, favorites, compatibility, duplicates, file size, and duration
-- Sort by name, size, duration, date, rating, resolution, or FPS
-- Codec, resolution, FPS, favorite, rating, and compatibility badges
-- `Shift`-click batch selection with range selection, Keep, Delete, Skip, Reset, Clear, and Regenerate Thumbnails and Metadata actions
-- Right-click quick actions for videos and folders, including reveal/copy-path, status changes, and thumbnail regeneration
-- Per-folder Review button to scope review mode to one folder
-- Drag and drop folder opening, multi-directory sessions
-- Recent directories with timestamps, stale-entry auto-cleanup
-- Privacy screen toggle (`Shift+Esc`)
-
-### Review Mode
-
-Fullscreen, one at a time, keyboard first.
-
-- Thumbnail strip with dynamic aspect ratio
-- In-app player with scrubbing, playback speed, bookmarks, and global mute
-- Ratings and favorites directly on the current video
-- Review summary with pending counts and delete totals
-- Next-undecided navigation for skipping videos you've already handled
-- Direct card opening that starts on the chosen video while preserving the filtered navigation scope
-- External player handoff for files the built-in player should not play
-- Preview and playback layouts adapt to normal, maximized, and high-resolution displays
-- Undo any decision before you commit the final delete
-
-### Duplicate Review
-
-Find likely duplicates across all loaded videos or just the current filtered view, then work through them with suggested keepers instead of starting from scratch.
-
-- Exact-copy detection with full-file SHA-256 hashing, whatever the filenames say
-- Two visual comparison methods: pHash (strict, few false positives) and visual similarity (catches more alternate encodes and resized copies, with more false positives)
-- Adjustable similarity threshold and sample count; results below roughly 95% deserve careful review
-- Optional mirrored-copy comparison
-- Suggested keeper priority based on resolution, bitrate, duration, FPS, and file size
-- Protection rules for videos already marked Keep or Skip
-- Manual keeper overrides and "Not a match" ignored-pair handling that survives reruns
-- Right-click actions for duplicate rows and groups, including keeper selection, exclusion, and group dismissal
-- Optional "run after scan" mode for duplicate detection
-- Never deletes automatically: selected copies are marked Delete and wait for the normal confirmed delete action
-
-Frames are compared at matching points in each file, so trimmed versions and clips cut from a longer video are not detected.
-
-### Thumbnail Generation
-
-- **Configurable frame count**: 1, 2, 4, 6, or 9 thumbnails per video (default: 6)
-- **Intro skip**: first frame offset by a configurable delay to avoid black fades (default: 3s)
-- **Parallel processing**: RAM and CPU-aware auto-detect, or set manually up to 32 processes
-- **Cached**: already-processed videos are skipped on rescan when their thumbnail set is complete
-- **Hardware acceleration**: optional GPU decoding (beta)
-- **Unattended runs**: the PC stays awake while VideoCull processes, and **Actions › When Processing Finishes** can put it to sleep or shut it down once a long run is done
-- **Rebuild warning**: changing thumbnails per video warns when existing thumbnail sets may need to be rebuilt
-
-### Cache
-
-Progress lives in SQLite databases under the configured cache location.
-
-- Three location modes: Centralised (default), Per-drive, Distributed (`.videocull` next to your files)
-- Old flat-root DBs and legacy `.video-cull-cache.json` files are migrated automatically on first scan
-- Status, ratings, favorites, bookmarks, metadata, and thumbnails survive rescans
-- Cache location changes can migrate existing cache data instead of forcing a fresh start
-- Cache and thumbnail files for deleted videos are cleaned up with the delete action
-- Stale-cache cleanup and empty-folder cleanup are opt-in maintenance actions
-
-### Export
-
-Generate an HTML report from Settings or the app menu, scoped to all loaded videos or just the current filtered results, grouped by folder with separate Keep/Delete/Pending/Skipped sections.
-
----
-
-## Keyboard Shortcuts
-
-### Grid and General
-
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl + O` | Open folder |
-| `Ctrl + F` | Search loaded videos (customizable) |
-| `F5` | Rescan |
-| `Ctrl + Z` | Undo |
-| `Ctrl + Backspace` | Send marked videos to Recycle Bin |
-| `Ctrl + E` | Reveal in Explorer |
-| `Ctrl + +` / `Ctrl + -` | Larger or smaller cards |
-| `Ctrl + K` | Find a command, folder or video |
-| `F11` | Toggle fullscreen |
-| `?` | Keyboard shortcuts reference |
-| `Shift + Esc` | Toggle privacy screen |
-
-### Review Mode
-
-| Shortcut | Action |
-|----------|--------|
-| `K` | Keep |
-| `D` | Mark for deletion |
-| `S` | Skip |
-| `Z` | Undo |
-| `Space` | Play / pause |
-| `Left` / `Right` | Previous / next video, or scrub 5s while playing |
-| `Tab` | Next undecided video |
-| `Enter` | Play in-app |
-| `Ctrl + Enter` | Open in external player |
-| `B` | Drop bookmark |
-| `[` / `]` | Playback speed down / up |
-| `Esc` | Stop / exit review |
-
-Review shortcuts are customizable in Settings.
-
----
-
-## Settings
-
-| Setting | Options | Default |
-|---------|---------|---------|
-| Cache location | Centralised / Per-drive / Distributed | Centralised |
-| Thumbnails per video | 1, 2, 4, 6, 9 | 6 |
-| Default card scale | 0.5x - 2.0x | 1.0x |
-| Default sort | Name / Size / Date / Duration / Rating / Resolution / FPS | Name |
-| Group by folder | On / Off | On |
-| Keep Review playback controls visible | On / Off | Off |
-| Parallel FFmpeg processes | Auto (RAM + CPU aware) / 1 / 2 / 3 / 4 / 6 / 8 / 12 / 16 / 24 / 32 | Auto |
-| Limit each FFmpeg process to 1 CPU thread | On / Off | On |
-| Intro skip delay | 0 - 60 seconds | 3s |
-| Hardware acceleration | On / Off | Off |
-| Keep the PC awake while processing | On / Off | On |
-| Auto-clean stale cache after scan | On / Off | Off |
-| Remove empty folders after deleting videos | On / Off | Off |
-| Auto updates | On / Off | On |
-| Feature toggles | Ratings, favorites | On |
-| Keybindings | Any key or combination | K / D / S / Z / Space |
-
-Duplicate detection also has its own settings tab with options for comparison method, similarity threshold, sample count, scope, keeper priority, ignored matches, sampling windows, and retry behavior.
-
----
-
-## Supported Formats
-
-VideoCull generates thumbnails and metadata with FFmpeg, so it can inspect many common video formats.
-
-The built-in player is intended for compatible web-playable media such as `.mp4`, `.webm`, `.mov`, `.mkv`, `.m4v`, and `.ogv` when the underlying codecs are supported. Legacy or unsupported formats such as `.avi`, `.wmv`, `.asf`, `.flv`, `.ts`, `.mts`, and `.mpeg` open in your default system player instead.
-
----
-
-## Known Issues and Feedback
-
-- Initial scanning can be very slow on some cloud-mounted drives, confirmed on mounted Google Drive setups. See [issue #2](https://github.com/StippieDot/VideoCull/issues/2).
-- Duplicate review does not detect clips cut from a longer video or trimmed versions of the same file.
-- VideoCull is Windows-only.
-
-Found a bug or something that is not obvious in the workflow? [Open an issue](https://github.com/StippieDot/VideoCull/issues). Reports from large, messy collections are especially useful.
-
----
-
-## Building from Source
-
-Requires Node.js 24 LTS and npm 11.19.0 or newer. `npm ci` also downloads the pinned FFmpeg and FFprobe build into `vendor/ffmpeg` and checks its SHA-256.
-
-If `npm --version` is below 11.19.0, run `npm install --global npm@11.19.0` before `npm ci`.
-
-```bash
-git clone https://github.com/StippieDot/VideoCull.git
-cd VideoCull
+# 如果使用 nvm，可通过 nvm install 和 nvm use 读取 .nvmrc。
 npm ci
 npm run dev
 ```
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Vite + Electron with hot reload |
-| `npm run test:ci` | IPC contract check, test TS compile, and full coverage run |
-| `npm run test:e2e` | Build the renderer and run the Electron Playwright regression flows |
-| `npm run package` | Full build + Windows installer (NSIS) |
+安装脚本会下载 Electron，并将本机 Homebrew 的 FFmpeg/FFprobe 与非系统动态库复制到被 Git 忽略的 `vendor/ffmpeg` 中，重写加载路径并临时签名。**Homebrew 依赖尚未固定到可复现的源码构建，构建结果会随本机工具版本变化。**
 
-Development documentation: [Roadmap](engineering/roadmap.md), [architecture](engineering/architecture/README.md), and [backlog](engineering/backlog.md).
+打开应用后选择 **Open Directory**。初次预览在后台生成，已有预览会复用。
 
-Development sessions use `%APPDATA%\VideoCull-dev`, so local settings and cache do not mix with the packaged app. See [Building from source](https://docs.videocull.app/reference/building-from-source) for Store packaging, native-module rebuilds, and the full command list.
+| 操作 | 快捷键 |
+| --- | --- |
+| 保留／标记删除／跳过 | `K` / `D` / `S` |
+| 撤销决定 | `Z` 或 `⌘Z` |
+| 播放／暂停 | 空格 |
+| 打开目录／搜索／命令面板 | `⌘O` / `⌘F` / `⌘K` |
+| 保存并退出 | `⌘Q` |
 
----
+红色关闭按钮隐藏窗口并保留当前会话；点击 Dock 图标恢复。退出再启动后，从最近目录中打开原目录恢复进度。
 
-## Stack
+## 验证与本地打包
 
-[Electron](https://www.electronjs.org/) - [React](https://react.dev/) - [Video.js](https://videojs.com/) - [FFmpeg](https://ffmpeg.org/) - [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) - [Zustand](https://github.com/pmndrs/zustand) - [TypeScript](https://www.typescriptlang.org/) - [Vite](https://vitejs.dev/)
+```sh
+npm run test:mac
+npm run test:mac:e2e
+npm run package:mac
+```
 
----
+输出位于 `artifacts/packages/`：`mac-arm64/VideoCull.app` 与 `VideoCull-Mac-arm64-2.4.0-mac.1.dmg`。本地构建为临时签名，未经过 Apple 公证；不要把它当作官方发行包。
 
-## Star History
+回归测试使用临时生成的视频和独立配置，覆盖扫描排除、坏文件跳过、首批预览、缓存复用、六帧预览、播放、保留／删除／跳过、撤销、关窗恢复、退出保存和废纸篓删除。界面测试可能在废纸篓留下合成测试视频。
 
-<a href="https://www.star-history.com/?repos=StippieDot%2FVideoCull&type=date&legend=top-left">
- <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=StippieDot/VideoCull&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=StippieDot/VideoCull&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=StippieDot/VideoCull&type=date&legend=top-left" />
- </picture>
-</a>
+GitHub Actions 配置了 Mac 检查，不上传安装包、媒体或缓存。上游 Windows 发布流程保留，但不会在此 Fork 中执行。
 
----
+## 数据与支持范围
 
-## License
+- 配置、进度与默认缓存位于 `~/Library/Application Support/VideoCull`；开发模式使用独立的 `VideoCull-dev` 配置。
+- 当前仍沿用上游的数据目录名称，不要同时运行多个使用同一配置目录的 VideoCull 版本。
+- 视频留在所选目录；应用不提供云端视频分析。开发依赖下载及主动打开外部链接需要网络。
+- 扫描跳过 `.git`、`node_modules`、`.app` 以及含 `.videocull-ignore` 文件的目录。本源码仓库已添加该标记。
+- Intel Mac、网络盘、所有外置盘文件系统与所有媒体编码尚未验证。
+- Mac 使用集中缓存；自动更新及处理后关机／休眠已关闭。
+- 性能与文件编码、关键帧间隔、存储介质及系统负载有关，抽样结果不代表整库处理时间。
 
-[GNU Affero General Public License v3.0](LICENSE), with an [additional permission for extensions](EXTENSION-PERMISSION.md) that lets separate extension modules use other license terms.
+## 贡献与反馈
 
-VideoCull bundles FFmpeg and FFprobe, licensed under the GNU GPL version 3 or later. They are built from source in [VideoCull-FFmpeg](https://github.com/StippieDot/VideoCull-FFmpeg), whose releases include the complete corresponding source. **Settings › About › Third-party notices** lists every bundled component and its license.
+请在[本分支的 Issues](https://github.com/yosoro114514/VideoCull-Mac/issues)反馈 Mac 问题，附系统版本、芯片、复现步骤以及去除个人路径后的日志。请勿公开私人视频或包含敏感信息的文件名。
+
+参见[贡献指南](.github/CONTRIBUTING.md)、[安全问题报告方式](.github/SECURITY.md)和[行为准则](.github/CODE_OF_CONDUCT.md)。适合所有平台的修复可以独立整理后提交上游；上游是否接受不影响本分支维护。
+
+## 归属与许可证
+
+原项目：[StippieDot/VideoCull](https://github.com/StippieDot/VideoCull)，原作者与贡献者保留其版权；Mac 适配由 yosoro114514 维护。上游 README 原文保存在 [README_UPSTREAM.md](README_UPSTREAM.md)，其中的下载与支持说明针对原项目，不代表本分支。
+
+继续使用 [AGPL-3.0-only](LICENSE)，并保留上游的[扩展附加许可](EXTENSION-PERMISSION.md)。第三方组件各自适用其许可证。赞助链接仍指向**原作者 StippieDot**。
+
+首发仅公开源码，不分发预编译二进制。未来公开安装包前，需要整理与随包 FFmpeg／动态库匹配的对应源码、许可和构建材料，并完成面向用户的签名、公证与安装验证。更多说明见 [NOTICE_MAC.md](NOTICE_MAC.md)。

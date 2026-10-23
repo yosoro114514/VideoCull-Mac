@@ -1,3 +1,4 @@
+import { primaryModifier } from '../platform';
 import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, ChevronRight, Copy, Film, Filter, Folder, X } from 'lucide-react';
 import useStore, { DUPLICATE_METHOD_NAMES, otherDuplicateMethod, videosOutsideFolderFilter } from '../store';
@@ -247,13 +248,13 @@ function useLocationKeys(navRef: React.RefObject<HTMLElement | null>, browsable:
     const handleKeyDown = (event: KeyboardEvent) => {
       const { target } = event;
       if (target instanceof Element && target.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]')) return;
-      if (event.ctrlKey && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'l') {
+      if (primaryModifier(event) && !event.altKey && !event.shiftKey && event.key.toLowerCase() === 'l') {
         const buttons = navRef.current?.querySelectorAll<HTMLButtonElement>('.location-bar-segment');
         const lastButton = buttons?.[buttons.length - 1];
         if (!lastButton) return;
         event.preventDefault();
         lastButton.focus();
-      } else if (browsable && event.altKey && !event.ctrlKey && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+      } else if (browsable && event.altKey && !primaryModifier(event) && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
         event.preventDefault();
         filterHistory.step(event.key === 'ArrowLeft' ? -1 : 1);
       }

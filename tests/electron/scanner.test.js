@@ -171,3 +171,27 @@ test('scanDirectory aborts when the cancellation guard throws', async () => {
     await fs.rm(tempRoot, { recursive: true, force: true });
   }
 });
+
+test('mixed libraries exclude source text and project folders while retaining TS/MTS video packets', async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'videocull-mixed-'));
+  try {
+    await fs.writeFile(path.join(root, 'source.ts'), 'export const name: string = "example";');
+    await fs.writeFile(path.join(root, 'types.d.ts'), 'declare module "test" {}');
+    await fs.writeFile(path.join(root, 'source.mts'), 'import fs from "node:fs";');
+    for (const [name, stride, offset] of [['stream.ts', 188, 0], ['camera.mts', 192, 4]]) {
+      const packets = Buffer.alloc(stride * 5, 0xff);
+      for (let i = offset; i < packets.length; i += stride) packets[i] = 0x47;
+      await fs.writeFile(path.join(root, name), packets);
+    }
+    for (const folder of ['node_modules', '.git', 'Editor.app', 'excluded']) {
+      await fs.mkdir(path.join(root, folder));
+      await fs.writeFile(path.join(root, folder, 'unwanted.mp4'), 'video');
+    }
+    await fs.writeFile(path.join(root, 'excluded', '.videocull-ignore'), '');
+    await fs.writeFile(path.join(root, 'empty.mp4'), '');
+    const result = await scanDirectory(root, true, undefined, { includeVisitedDirs: true });
+    assert.deepEqual(result.videos.map(v => v.filename).sort(), ['camera.mts', 'empty.mp4', 'stream.ts']);
+    assert.ok(result.incompleteDirs.includes(path.join(root, 'excluded')));
+    assert.ok(!result.visitedDirs.includes(path.join(root, 'excluded')));
+  } finally { await fs.rm(root, { recursive: true, force: true }); }
+});

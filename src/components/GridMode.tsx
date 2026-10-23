@@ -1,3 +1,4 @@
+import { primaryModifier } from '../platform';
 import {
   useRef,
   useState,
@@ -634,7 +635,7 @@ export default function GridMode({ onReviewFolder, onRegenerateThumbnails }: Gri
   const handleCardPlay = useCallback((video: Video, event: ReactMouseEvent) => {
     persistCurrentScroll();
     const canPlayInReview = isWebSupported(video.path) && (!compatibilityCheckEnabled || video.compatible !== false);
-    if (canPlayInReview && !event.ctrlKey) {
+    if (canPlayInReview && !primaryModifier(event)) {
       useStore.getState().enterReviewAndPlay(video.id);
     } else if (window.electronAPI) {
       openVideoExternally(video.path);

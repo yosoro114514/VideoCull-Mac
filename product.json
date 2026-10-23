@@ -6,9 +6,9 @@
   "appId": "com.videocull.app",
   "publisher": "StippieDot",
   "repository": {
-    "owner": "StippieDot",
-    "name": "VideoCull",
-    "url": "https://github.com/StippieDot/VideoCull"
+    "owner": "yosoro114514",
+    "name": "VideoCull-Mac",
+    "url": "https://github.com/yosoro114514/VideoCull-Mac"
   },
   "website": "https://videocull.app",
   "documentation": "https://docs.videocull.app",
@@ -20,5 +20,11 @@
     "packageFamilyName": "StippieDot.VideoCull_ysntqx69kxmmg",
     "storeId": "9NG9Z0CL73PC",
     "lastSubmittedVersion": "2.3.2.0"
-  }
+  },
+  "upstreamRepository": {
+    "owner": "StippieDot",
+    "name": "VideoCull",
+    "url": "https://github.com/StippieDot/VideoCull"
+  },
+  "edition": "Unofficial Mac community fork"
 }

@@ -678,6 +678,7 @@ export type LegalFileName = 'license' | 'notices';
 
 // ── Electron API (exposed via preload) ─────────────────────────────
 export interface ElectronAPI {
+  platform?: string;
   initialTheme: ColorTheme;
   /** The window started with the Windows 11 Mica material behind the title bar. */
   usesMica: boolean;

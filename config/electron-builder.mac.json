@@ -1,0 +1,33 @@
+{
+  "appId": "io.github.yosoro114514.videocull-mac",
+  "files": [
+    "artifacts/renderer/**/*",
+    "electron/**/*",
+    "product.json",
+    "node_modules/better-sqlite3/**/*",
+    "!node_modules/better-sqlite3/prebuilds/{win32,linux,linuxmusl}-*.node",
+    "!node_modules/better-sqlite3/prebuilds/darwin-x64.node"
+  ],
+  "mac": {
+    "target": [
+      "dir",
+      "dmg"
+    ],
+    "category": "public.app-category.video",
+    "icon": "build/videocull.icns",
+    "identity": "-",
+    "hardenedRuntime": false,
+    "gatekeeperAssess": false,
+    "minimumSystemVersion": "15.0",
+    "artifactName": "VideoCull-Mac-arm64-${version}.${ext}",
+    "extendInfo": {
+      "NSDocumentsFolderUsageDescription": "Open and organise the video folders you choose.",
+      "NSDownloadsFolderUsageDescription": "Open and organise downloaded videos you choose.",
+      "NSRemovableVolumesUsageDescription": "Open and organise videos on drives you choose."
+    }
+  },
+  "publish": null,
+  "dmg": {
+    "sign": false
+  }
+}

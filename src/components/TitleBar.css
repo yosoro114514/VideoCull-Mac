@@ -414,3 +414,7 @@
     opacity: 0.5;
   }
 }
+
+/* macOS traffic lights occupy the left edge; menus live in the system menu bar. */
+.title-bar-mac .title-bar-start { padding-left: 86px; }
+.title-bar-mac .title-bar-actions { padding-right: 10px; }

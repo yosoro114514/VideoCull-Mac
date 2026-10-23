@@ -34,7 +34,7 @@ test('batch delete only removes intended files', async () => {
     page.once('dialog', (dialog) => dialog.accept());
     await page.getByRole('button', { name: /Delete 1 videos/ }).click();
 
-    await expect(page.getByText('Moved to Recycle Bin')).toBeVisible();
+    await expect(page.getByText(/Moved to (Recycle Bin|Trash)/)).toBeVisible();
     await expect(page.getByText('alpha.mp4')).toHaveCount(0);
     await expect(page.getByText('beta.mp4')).toBeVisible();
 

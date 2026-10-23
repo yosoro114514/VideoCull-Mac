@@ -1,3 +1,4 @@
+import { IS_MAC } from '../platform';
 import React, { useState, useEffect } from 'react';
 import useStore from '../store';
 import { ArrowDown, ArrowUp, X, RotateCcw, RefreshCw, FileDown, Database, Code2, ExternalLink, HeartHandshake, FolderOpen, Copy, Trash2, FileText } from 'lucide-react';
@@ -16,7 +17,7 @@ type SettingsTab = 'interface' | 'features' | 'duplicates' | 'keybindings' | 'ca
 const ABOUT_LINKS = {
   repo: PRODUCT.repository.url,
   releases: `${PRODUCT.repository.url}/releases`,
-  support: `${PRODUCT.website}/support/`,
+  support: IS_MAC ? `${PRODUCT.repository.url}/issues` : `${PRODUCT.website}/support/`,
   sponsors: `https://github.com/sponsors/${PRODUCT.publisher}`,
   paypal: 'https://paypal.me/stippiedot',
 } as const;
@@ -896,8 +897,8 @@ export default function SettingsModal({ initialTab = 'interface', tabRequestId =
                     onChange={(e) => void handleCacheLocationChange(e.target.value)}
                   >
                     <option value="centralised">Centralised</option>
-                    <option value="per-drive">Per-drive</option>
-                    <option value="distributed">Distributed</option>
+                    {!IS_MAC && <option value="per-drive">Per-drive</option>}
+                    {!IS_MAC && <option value="distributed">Distributed</option>}
                   </select>
                   <span className="help-text">Centralised stores cache in app data. Per-drive keeps cache on the same drive. Distributed creates a hidden .videocull folder inside each loaded folder.</span>
                 </div>
@@ -1085,7 +1086,7 @@ export default function SettingsModal({ initialTab = 'interface', tabRequestId =
                 <div className="form-group checkbox-group">
                   <label>
                     <input type="checkbox" checked={localSettings.cpuThreadsLimited} onChange={(e) => handleChange('cpuThreadsLimited', e.target.checked)} />
-                    Limit each FFmpeg process to 1 CPU thread (Recommended)
+                    {IS_MAC ? 'Limit each decoder to 4 CPU threads (Recommended)' : 'Limit each FFmpeg process to 1 CPU thread (Recommended)'}
                   </label>
                   <span className="help-text">Uses more small FFmpeg processes instead of fewer multi-threaded processes. Usually faster and smoother for thumbnail generation.</span>
                 </div>
@@ -1103,7 +1104,7 @@ export default function SettingsModal({ initialTab = 'interface', tabRequestId =
                     <input type="checkbox" checked={localSettings.keepAwakeWhileProcessing} onChange={(e) => handleChange('keepAwakeWhileProcessing', e.target.checked)} />
                     Keep the PC awake while processing
                   </label>
-                  <span className="help-text">Stops Windows from going to sleep on its own while videos are scanned, read or fingerprinted, so long runs can finish unattended. Sleeping manually still works, and the screen can still turn off.</span>
+                  <span className="help-text">Stops your computer from going to sleep on its own while videos are scanned, read or fingerprinted, so long runs can finish unattended. Sleeping manually still works, and the screen can still turn off.</span>
                 </div>
               </div>
             )}
@@ -1161,6 +1162,7 @@ export default function SettingsModal({ initialTab = 'interface', tabRequestId =
             )}
 
             {activeTab === 'updates' && (() => {
+              if (IS_MAC) return <div className="settings-form"><p>Mac personal edition · v{appVersionLabel}</p><p>Updates are installed manually. This edition does not download upstream Windows releases.</p></div>;
               if (distributionInfo?.channel === 'microsoft-store') {
                 return (
                   <div className="settings-form">
@@ -1193,6 +1195,7 @@ export default function SettingsModal({ initialTab = 'interface', tabRequestId =
                   <div className="form-group">
                     <label>Current Version</label>
                     <span className="version-display">v{appVersionLabel}</span>
+                    {IS_MAC && <p>Unofficial Mac fork by yosoro114514. Original VideoCull by StippieDot.</p>}
                   </div>
 
                   <div className="form-group">
@@ -1274,7 +1277,7 @@ export default function SettingsModal({ initialTab = 'interface', tabRequestId =
                 <div className="about-link-grid">
                   <button className="about-link-btn" onClick={() => openExternal(ABOUT_LINKS.support)}>
                     <HeartHandshake size={16} />
-                    <span>VideoCull Support</span>
+                    <span>{IS_MAC ? 'Mac Fork Issues' : 'VideoCull Support'}</span>
                     <ExternalLink size={13} />
                   </button>
                   <button className="about-link-btn" onClick={() => openExternal(ABOUT_LINKS.repo)}>
@@ -1292,11 +1295,11 @@ export default function SettingsModal({ initialTab = 'interface', tabRequestId =
                 <div className="about-support-row">
                   <button className="about-support-btn" onClick={() => openExternal(ABOUT_LINKS.sponsors)}>
                     <HeartHandshake size={15} />
-                    GitHub Sponsors
+                    {IS_MAC ? 'Sponsor Original Author' : 'GitHub Sponsors'}
                   </button>
                   <button className="about-support-btn" onClick={() => openExternal(ABOUT_LINKS.paypal)}>
                     <HeartHandshake size={15} />
-                    PayPal
+                    {IS_MAC ? 'Original Author · PayPal' : 'PayPal'}
                   </button>
                 </div>
 

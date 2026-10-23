@@ -1,3 +1,4 @@
+import { IS_MAC } from '../platform';
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { ColorTheme, DuplicateSortField, StatusFilter, ToastInput, ToastKind } from '../types';
 import type { SortField } from '../types';
@@ -866,13 +867,13 @@ export default function Sidebar({
       if (permanentSuccessCount > 0 && failedCount > 0) {
         onNotify({
           title: 'Delete partly failed',
-          detail: `${succeeded.length} removed, ${failedCount} failed. ${permanentSuccessCount} skipped Recycle Bin.${folderDetail}`,
+          detail: `${succeeded.length} removed, ${failedCount} failed. ${permanentSuccessCount} skipped ${IS_MAC ? 'Trash' : 'Recycle Bin'}.${folderDetail}`,
           kind: 'error',
         });
       } else if (permanentSuccessCount > 0) {
         onNotify({
           title: 'Permanently deleted',
-          detail: `${permanentSuccessCount} ${permanentSuccessCount === 1 ? 'file' : 'files'} skipped Recycle Bin.${folderDetail}`,
+          detail: `${permanentSuccessCount} ${permanentSuccessCount === 1 ? 'file' : 'files'} skipped ${IS_MAC ? 'Trash' : 'Recycle Bin'}.${folderDetail}`,
           kind: 'warning',
         });
       } else if (permanentFailureCount > 0 || failedCount > 0) {
@@ -883,7 +884,7 @@ export default function Sidebar({
         });
       } else {
         onNotify({
-          title: 'Moved to Recycle Bin',
+          title: IS_MAC ? 'Moved to Trash' : 'Moved to Recycle Bin',
           detail: `${succeeded.length} ${succeeded.length === 1 ? 'video' : 'videos'} removed, ${formatSize(stats.deleteSize)} freed.${folderDetail}`,
           kind: 'success',
         });
@@ -1256,7 +1257,7 @@ export default function Sidebar({
         )}
 
         <div className="sidebar-footer-row">
-          <button className="settings-icon-btn" onClick={onOpenSettings} title="Preferences (Ctrl+,)" aria-label="Preferences">
+          <button className="settings-icon-btn" onClick={onOpenSettings} title={`Preferences (${IS_MAC ? '⌘' : 'Ctrl'}+,)`} aria-label="Preferences">
             <Settings size={18} />
           </button>
 

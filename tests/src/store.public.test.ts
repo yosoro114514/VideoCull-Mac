@@ -721,3 +721,13 @@ describe('useStore public behavior', () => {
     }));
   });
 });
+
+test('successful reprobe clears failure state so repaired videos can generate previews again', () => {
+  const store = getStoreApi();
+  installElectronApiMock();
+  store.setState(store.getInitialState(), true);
+  useStore.getState().setVideos([makeVideo('repaired', { metadataFailedAt: 100, metadataFailureReason: 'broken' })]);
+  useStore.getState().updateVideoThumbnailsBatch([{ videoId: 'repaired', metadataFailedAt: null, metadataFailureReason: null, durationSecs: 12 }]);
+  expect(useStore.getState().videos[0].metadataFailedAt).toBeNull();
+  expect(useStore.getState().videos[0].metadataFailureReason).toBeNull();
+});

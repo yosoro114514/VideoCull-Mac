@@ -83,6 +83,7 @@ const {
 const { isTrustedAppUrl, isTrustedIpcSender, guardIpcMain, lockWebContents } = require('./ipc-guard');
 
 const cacheService = createCacheService();
+const isMac = process.platform === 'darwin';
 const isE2E = process.env.VC_E2E_USE_DIST === '1';
 const isDev = !app.isPackaged && !isE2E;
 const profileBootstrap = globalThis.__VIDEOCULL_PROFILE_BOOTSTRAP__ ?? null;
@@ -92,7 +93,7 @@ const updatesEnabled = shouldEnableUpdates({
   isDev,
   isE2E,
   distributionChannel,
-  disableUpdates: process.env.VC_DISABLE_UPDATES === '1',
+  disableUpdates: isMac || process.env.VC_DISABLE_UPDATES === '1',
 });
 let pendingProfileWarning = profileBootstrap?.warning ?? null;
 let storeWindowReady = false;
@@ -128,6 +129,9 @@ const CACHE_IO_CONCURRENCY = 6;
 const METADATA_FLUSH_CONCURRENCY = 6;
 const SINGLE_THUMBNAIL_VIDEO_DURATION_SECS = 10;
 const ALLOWED_EXTERNAL_URLS = new Set([
+  product.repository.url,
+  `${product.repository.url}/releases`,
+  `${product.repository.url}/issues`,
   'https://github.com/StippieDot/VideoCull',
   'https://github.com/StippieDot/VideoCull/releases',
   'https://github.com/sponsors/StippieDot',
@@ -317,9 +321,9 @@ let currentTheme = 'dark';
 function applyWindowMaterial(enabled) {
   useMica = micaSupported && enabled;
   if (!mainWindow || mainWindow.isDestroyed()) return;
-  mainWindow.setBackgroundMaterial(useMica ? 'mica' : 'none');
+  if (!isMac) mainWindow.setBackgroundMaterial(useMica ? 'mica' : 'none');
   mainWindow.setBackgroundColor(useMica ? '#00000000' : getThemeBackgroundColor(currentTheme));
-  mainWindow.setTitleBarOverlay(getTitleBarOverlay(currentTheme, useMica));
+  if (!isMac) mainWindow.setTitleBarOverlay(getTitleBarOverlay(currentTheme, useMica));
 }
 
 function applyNativeTheme(value) {
@@ -328,7 +332,7 @@ function applyNativeTheme(value) {
   nativeTheme.themeSource = theme;
   if (mainWindow && !mainWindow.isDestroyed()) {
     if (!useMica) mainWindow.setBackgroundColor(getThemeBackgroundColor(theme));
-    mainWindow.setTitleBarOverlay(getTitleBarOverlay(theme, useMica));
+    if (!isMac) mainWindow.setTitleBarOverlay(getTitleBarOverlay(theme, useMica));
   }
   return theme;
 }
@@ -363,7 +367,7 @@ function createWindow(initialTheme = 'dark', micaTitleBar = true) {
     // The renderer draws the title bar with the menu (TitleBar.tsx); Windows still draws the
     // window buttons. The application menu stays set for its keyboard shortcuts.
     titleBarStyle: 'hidden',
-    titleBarOverlay: getTitleBarOverlay(theme, useMica),
+    ...(isMac ? { trafficLightPosition: { x: 12, y: 9 } } : { titleBarOverlay: getTitleBarOverlay(theme, useMica) }),
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -415,7 +419,14 @@ function createWindow(initialTheme = 'dark', micaTitleBar = true) {
   // Closing the last window quits the app, but only after the window is gone, and by then the
   // renderer can no longer flush its pending saves. Quit first and let the window close at the end.
   mainWindow.on('close', (event) => {
-    if (process.platform === 'darwin' || gracefulShutdown.phase() === 'complete') return;
+    if (gracefulShutdown.phase() === 'complete') return;
+    if (isMac && !isQuitting) {
+      // Keep the renderer/session alive when the red window button is clicked. Cmd+Q
+      // still follows the existing flush-and-drain shutdown path.
+      event.preventDefault();
+      mainWindow.hide();
+      return;
+    }
     event.preventDefault();
     app.quit();
   });
@@ -612,16 +623,20 @@ function setApplicationMenu() {
     },
     setFinishAction: (action) => {
       if (action === 'none') powerManager.cancelFinishAction();
-      else powerManager.setFinishAction(action);
+      else if (!isMac) powerManager.setFinishAction(action);
     },
     setPaused: (paused) => (paused ? processingPause.pause() : processingPause.resume()),
     openReleaseNotes: () => openExternalLink(`${product.repository.url}/releases`),
     reportProblem: () => openExternalLink(`${product.repository.url}/issues`),
     openLogFolder: () => openFolderPath(path.dirname(log.transports.file.getFile().path)),
-    openHelpWebsite: () => openExternalLink(`${product.website}/support/`),
+    openHelpWebsite: () => openExternalLink(isMac ? `${product.repository.url}/issues` : `${product.website}/support/`),
     openSponsors: () => openExternalLink(`https://github.com/sponsors/${product.publisher}`),
     openPayPal: () => openExternalLink('https://paypal.me/stippiedot'),
   });
+  if (isMac) {
+    template.unshift({ role: 'appMenu', label: product.displayName });
+    template.push({ label: 'Edit', submenu: [{ role: 'cut' }, { role: 'copy' }, { role: 'paste' }, { role: 'selectAll' }] }, { role: 'windowMenu' });
+  }
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
 }
 
@@ -650,6 +665,16 @@ ipcMain.on('set-menu-state', (_event, state) => {
     setApplicationMenu();
   } catch (err) {
     log.error('[menu] Could not apply the menu state:', err);
+  }
+});
+
+app.on('activate', () => {
+  if (isQuitting) return;
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.show();
+    mainWindow.focus();
+  } else if (app.isReady()) {
+    createWindow(currentTheme);
   }
 });
 
@@ -807,7 +832,7 @@ async function getCacheOptions() {
   const config = await readJsonFile(CONFIG_FILE, {});
 
   return {
-    mode: config.cacheLocation || 'centralised',
+    mode: isMac ? 'centralised' : config.cacheLocation || 'centralised',
     defaultCentralRoot: defaultCentralCacheRoot,
     centralCachePath: config.centralCachePath || null,
     perDriveCachePaths: config.perDriveCachePaths || {},
@@ -828,7 +853,7 @@ function getCachePaths(dirPath, cacheOptions) {
 
 function normalizeCacheSettings(settings = {}) {
   return {
-    mode: settings.cacheLocation || 'centralised',
+    mode: isMac ? 'centralised' : settings.cacheLocation || 'centralised',
     defaultCentralRoot: defaultCentralCacheRoot,
     centralCachePath: settings.centralCachePath || null,
     perDriveCachePaths: settings.perDriveCachePaths || {},
@@ -1116,6 +1141,7 @@ const powerManager = createPowerManager({
   stopBlocker: (id) => powerSaveBlocker.stop(id),
   isPaused: () => processingPause.getState().status === 'paused',
   performFinishAction: (action) => {
+    if (isMac) return;
     log.info(`[power] Processing finished; running the chosen action: ${action}`);
     if (action === 'shutdown') {
       // Close VideoCull cleanly first (cache writes drained and closed); will-quit starts the shutdown.
@@ -2219,6 +2245,8 @@ ipcMain.handle('process-metadata', (_event, videos, dirPath, options = {}) => tr
       const video = videoById.get(videoId);
       if (!video) return;
       const reason = summarizeMediaProbeError(err);
+      // Publish failures too: the renderer must not queue known failed probes for frames.
+      readyBatch.push({ videoId, metadataFailedAt: Date.now(), metadataFailureReason: reason });
       const videoFolder = getVideoFolderPath(video);
       failed++;
       deletePendingFolderWrite(pendingMetadataSuccesses, videoFolder, videoId);
@@ -2322,8 +2350,8 @@ ipcMain.handle('generate-thumbnails', (_event, videos, dirPath, options = {}) =>
   const needThumbs = forceRegenerate
     ? safeVideos
     : safeVideos.filter((v) => (
-      !v.thumbnails ||
-      v.thumbnails.length < expectedThumbCount(v)
+      v.sizeBytes !== 0 && !v.metadataFailedAt &&
+      (!v.thumbnails || v.thumbnails.length < expectedThumbCount(v))
     ));
 
   let readyBatch = [];
@@ -2896,6 +2924,9 @@ async function commitCacheLocationSettings(newSettings) {
 }
 
 ipcMain.handle('migrate-cache-settings', async (_event, _oldSettings, newSettings) => {
+  if (isMac && newSettings?.cacheLocation !== 'centralised') {
+    return { status: 'error', migrated: 0, errors: ['The Mac personal edition uses centralised cache.'] };
+  }
   const persistedSettings = await readJsonFile(CONFIG_FILE, {});
   if (!cacheRelevantSettingsChanged(persistedSettings, newSettings)) {
     return { status: 'unchanged', migrated: 0, errors: [] };
@@ -3070,7 +3101,8 @@ ipcMain.handle('get-config', async () => {
   try {
     const configPath = path.join(app.getPath('userData'), CONFIG_FILE);
     const data = await fs.readFile(configPath, 'utf8');
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    return isMac ? { ...parsed, cacheLocation: 'centralised', autoUpdates: false } : parsed;
   } catch (e) {
     return null;
   }
@@ -3079,7 +3111,7 @@ ipcMain.handle('get-config', async () => {
 ipcMain.handle('save-config', async (_event, config) => {
   try {
     const theme = normalizeColorTheme(config?.theme);
-    const normalizedConfig = { ...config, theme };
+    const normalizedConfig = { ...config, theme, ...(isMac ? { cacheLocation: 'centralised', autoUpdates: false } : {}) };
     await writeJsonFile(CONFIG_FILE, normalizedConfig);
     applyNativeTheme(theme);
     powerManager.setKeepAwake(normalizedConfig.keepAwakeWhileProcessing !== false);

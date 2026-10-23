@@ -1,3 +1,4 @@
+import { IS_MAC } from '../platform';
 import {
   ArrowLeft,
   Copy,
@@ -298,14 +299,14 @@ export function buildFolderMenu(context: FolderMenuContext, actions: LocationAct
   }
   items.push(
     SEPARATOR('sep-path'),
-    { type: 'item', key: 'reveal', label: 'Reveal in Explorer', icon: FolderOpen, onSelect: () => actions.reveal(folder) },
+    { type: 'item', key: 'reveal', label: IS_MAC ? 'Reveal in Finder' : 'Reveal in Explorer', icon: FolderOpen, onSelect: () => actions.reveal(folder) },
     { type: 'item', key: 'copy', label: 'Copy Path', icon: Copy, onSelect: () => actions.copyPath(folder) },
   );
 
   const firstFolder = context.filteredVideos[0] && getFolderPath(context.filteredVideos[0]);
   if (mode === 'grid' && context.filteredVideos.some((video) => getFolderPath(video) !== firstFolder)) {
     items.push(SEPARATOR('sep-go'), {
-      type: 'item', key: 'go-to', label: 'Go to Folder...', icon: FolderTree, detail: 'Ctrl+G', onSelect: actions.openFolderSearch,
+      type: 'item', key: 'go-to', label: 'Go to Folder...', icon: FolderTree, detail: IS_MAC ? '⌘+G' : 'Ctrl+G', onSelect: actions.openFolderSearch,
     });
   }
 
@@ -328,7 +329,7 @@ export function buildVideoMenu(video: Video, canNarrowReview: boolean, actions: 
     STATUS_LABELS[video.status],
   ].filter(Boolean);
   const items: LocationMenuItem[] = [
-    { type: 'item', key: 'reveal', label: 'Reveal in Explorer', icon: FolderOpen, onSelect: () => actions.reveal(video.path) },
+    { type: 'item', key: 'reveal', label: IS_MAC ? 'Reveal in Finder' : 'Reveal in Explorer', icon: FolderOpen, onSelect: () => actions.reveal(video.path) },
     { type: 'item', key: 'external', label: 'Play Externally', icon: ExternalLink, onSelect: () => actions.playExternally(video.path) },
     { type: 'item', key: 'copy', label: 'Copy Path', icon: Copy, onSelect: () => actions.copyPath(video.path) },
     SEPARATOR('sep-folder'),

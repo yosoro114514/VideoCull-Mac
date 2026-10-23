@@ -14,7 +14,7 @@ export async function createUserDataDir() {
   return fs.mkdtemp(path.join(os.tmpdir(), 'videocull-e2e-userdata-'));
 }
 
-export async function createSessionFixture(videoNames: string[]) {
+export async function createSessionFixture(videoNames: string[], durationSecs = 1) {
   const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'videocull-e2e-session-'));
   const mediaDir = path.join(rootDir, 'session-clips');
   await fs.mkdir(mediaDir, { recursive: true });
@@ -22,7 +22,7 @@ export async function createSessionFixture(videoNames: string[]) {
   await execFileAsync(ffmpegPath, [
     '-y',
     '-f', 'lavfi',
-    '-i', 'color=c=black:s=160x90:d=1',
+    '-i', `testsrc2=s=320x180:d=${durationSecs}`,
     '-an',
     '-pix_fmt', 'yuv420p',
     sourcePath,
@@ -51,8 +51,8 @@ export async function launchElectronApp(userDataDir: string): Promise<ElectronAp
   delete launchEnv.ELECTRON_RUN_AS_NODE;
 
   return electron.launch({
-    executablePath: electronPath,
-    args: [process.cwd()],
+    executablePath: process.env.VC_TEST_EXECUTABLE || electronPath,
+    args: process.env.VC_TEST_EXECUTABLE ? [] : [process.cwd()],
     env: {
       ...launchEnv,
       VC_E2E_USE_DIST: '1',

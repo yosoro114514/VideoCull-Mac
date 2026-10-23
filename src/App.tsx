@@ -569,8 +569,8 @@ export default function App() {
         });
       }
       const needsThumbnails = (v: typeof allVideos[number]) => (
-        !v.thumbnails ||
-        v.thumbnails.length < expectedThumbCount(v)
+        v.sizeBytes !== 0 && !v.metadataFailedAt &&
+        (!v.thumbnails || v.thumbnails.length < expectedThumbCount(v))
       );
       const metadataTasks = normalizedVideos.filter(needsMetadataRefresh);
       if (metadataTasks.length > 0) {
@@ -580,14 +580,37 @@ export default function App() {
         genProgressPhaseRef.current = 'metadata';
         setIsGenerating(true);
         setGenProgress({ current: 0, total: metadataTasks.length, phase: 'metadata' });
+        let firstPreviewBatch = true;
         for (const group of normalizedGroups) {
           const needMetadata = group.videos.filter(needsMetadataRefresh);
           if (needMetadata.length === 0) continue;
-          genProgressBaseRef.current = completedTasks;
-          await window.electronAPI.processMetadata(needMetadata.map(toMediaProbeInput), group.dirPath);
-          completedTasks += needMetadata.length;
-          if (scanId === scanIdRef.current) {
+          // Produce an initial set of complete multi-frame cards before probing the
+          // rest of a large library. Keep each stage sequential so cancellation and
+          // the existing global progress callbacks retain their single owner.
+          const batches = firstPreviewBatch && needMetadata.length > 16
+            ? [needMetadata.slice(0, 16), needMetadata.slice(16)]
+            : [needMetadata];
+          for (const batch of batches) {
+            genProgressBaseRef.current = completedTasks;
+            genProgressTotalRef.current = metadataTasks.length;
+            genProgressPhaseRef.current = 'metadata';
+            await window.electronAPI.processMetadata(batch.map(toMediaProbeInput), group.dirPath);
+            if (scanId !== scanIdRef.current) return;
+            completedTasks += batch.length;
             setGenProgress({ current: completedTasks, total: metadataTasks.length, phase: 'metadata' });
+            if (firstPreviewBatch && completedTasks < metadataTasks.length) {
+              const ids = new Set(batch.map((video) => video.id));
+              const previews = useStore.getState().videos.filter((video) => ids.has(video.id) && needsThumbnails(video));
+              if (previews.length) {
+                genProgressBaseRef.current = 0;
+                genProgressTotalRef.current = previews.length;
+                genProgressPhaseRef.current = 'thumbnails';
+                setGenProgress({ current: 0, total: previews.length, phase: 'thumbnails' });
+                await window.electronAPI.generateThumbnails(previews, group.dirPath);
+                if (scanId !== scanIdRef.current) return;
+              }
+            }
+            firstPreviewBatch = false;
           }
         }
         if (scanId === scanIdRef.current) {

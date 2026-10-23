@@ -8,6 +8,7 @@ on:
 
 jobs:
   build-store-candidate:
+    if: github.repository == 'StippieDot/VideoCull'
     runs-on: windows-latest
     permissions:
       contents: read

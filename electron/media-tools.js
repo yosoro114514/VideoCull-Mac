@@ -24,8 +24,8 @@ const mediaToolsDir = resolveMediaToolsDir({
   appDir: __dirname,
   resourcesPath: process.resourcesPath,
 });
-const ffmpegPath = path.join(mediaToolsDir, 'ffmpeg.exe');
-const ffprobePath = path.join(mediaToolsDir, 'ffprobe.exe');
+const ffmpegPath = path.join(mediaToolsDir, process.platform === 'win32' ? 'ffmpeg.exe' : 'ffmpeg');
+const ffprobePath = path.join(mediaToolsDir, process.platform === 'win32' ? 'ffprobe.exe' : 'ffprobe');
 
 /**
  * Logs which FFmpeg build is in use, or why none is usable. Called once at startup so a broken

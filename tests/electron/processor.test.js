@@ -289,3 +289,47 @@ test('an epoch-zero creation date is treated as no camera date', async () => {
     await fs.rm(tempDir, { recursive: true, force: true });
   }
 });
+
+test('empty videos fail without spawning a probe; failed media never spawns frame extraction', async () => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'videocull-invalid-'));
+  const originalProbe = mediaProcess.probe;
+  const originalFfmpeg = mediaProcess.runFfmpeg;
+  try {
+    let probes = 0;
+    let frames = 0;
+    mediaProcess.probe = async () => { probes++; throw new Error('should not probe'); };
+    mediaProcess.runFfmpeg = async () => { frames++; throw new Error('should not extract'); };
+    const emptyPath = path.join(root, 'empty.mp4');
+    await fs.writeFile(emptyPath, '');
+    await assert.rejects(__test.getVideoMetadata(emptyPath), /Empty video/);
+    const progress = [];
+    await processVideos([
+      { id: 'empty', path: emptyPath, sizeBytes: 0, thumbnails: [] },
+      { id: 'broken', path: path.join(root, 'broken.mp4'), sizeBytes: 5, metadataFailedAt: Date.now(), thumbnails: [] },
+    ], root, { maxConcurrent: 2 }, p => progress.push(p), () => {});
+    assert.equal(probes, 0);
+    assert.equal(frames, 0);
+    assert.equal(progress.at(-1).current, 2);
+  } finally {
+    mediaProcess.probe = originalProbe;
+    mediaProcess.runFfmpeg = originalFfmpeg;
+    await fs.rm(root, { recursive: true, force: true });
+  }
+});
+
+test('Mac auto concurrency remains bounded even when free pages are low, and manual limits still work', () => {
+  if (process.platform !== 'darwin') return;
+  const { getConcurrentLimit } = require('../../electron/processor');
+  const free = os.freemem;
+  const total = os.totalmem;
+  const cpus = os.cpus;
+  try {
+    os.freemem = () => 100 * 1024 ** 2;
+    os.totalmem = () => 16 * 1024 ** 3;
+    os.cpus = () => Array(12).fill({});
+    assert.equal(getConcurrentLimit({ maxConcurrent: 'auto' }), 4);
+    os.totalmem = () => 8 * 1024 ** 3;
+    assert.equal(getConcurrentLimit({ maxConcurrent: 'auto' }), 2);
+    assert.equal(getConcurrentLimit({ maxConcurrent: 1 }), 1);
+  } finally { os.freemem = free; os.totalmem = total; os.cpus = cpus; }
+});

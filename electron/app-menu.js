@@ -163,7 +163,7 @@ function fileMenu(state, actions) {
       openRecentItem(state, send),
       { type: 'separator' },
       { label: 'Rescan', accelerator: 'F5', enabled: state.hasSession, click: () => send('rescan-directory') },
-      revealFolderItem(state, send, 'Reveal Folder in Explorer'),
+      revealFolderItem(state, send, process.platform === 'darwin' ? 'Reveal Folder in Finder' : 'Reveal Folder in Explorer'),
       { label: 'Close Session', enabled: state.hasSession, click: () => send('close-session') },
       { type: 'separator' },
       { label: 'Export Report...', accelerator: 'CmdOrCtrl+Shift+E', enabled: state.canExport, click: () => send('export-report') },
@@ -200,6 +200,7 @@ function actionsMenu(state, actions) {
       },
       {
         label: 'When Processing Finishes',
+        visible: process.platform === 'win32',
         enabled: state.processing,
         submenu: /** @type {const} */ ([['none', 'Do Nothing'], ['sleep', 'Sleep'], ['shutdown', 'Shut Down']]).map(([action, label]) => ({
           label,
@@ -290,7 +291,7 @@ function videoMenu(state, actions) {
     label: 'Video',
     submenu: [
       { label: 'Play Externally', accelerator: 'CmdOrCtrl+P', enabled: state.activeVideoCount === 1, click: () => send('play-external') },
-      { label: 'Reveal in Explorer', accelerator: 'CmdOrCtrl+E', enabled: state.activeVideoCount === 1, click: () => send('reveal-video') },
+      { label: process.platform === 'darwin' ? 'Reveal in Finder' : 'Reveal in Explorer', accelerator: 'CmdOrCtrl+E', enabled: state.activeVideoCount === 1, click: () => send('reveal-video') },
       {
         label: state.activeVideoCount > 1 ? `Copy Paths (${state.activeVideoCount})` : 'Copy Path',
         enabled: state.activeVideoCount > 0,
@@ -322,7 +323,7 @@ function helpMenu(state, actions) {
       { type: 'separator' },
       ...(state.updatesEnabled ? [{ label: 'Check for Updates...', click: () => send('check-updates') }] : []),
       {
-        label: 'Support VideoCull',
+        label: process.platform === 'darwin' ? 'Support Original Author' : 'Support VideoCull',
         submenu: [
           { label: 'GitHub Sponsors', click: actions.openSponsors },
           { label: 'PayPal', click: actions.openPayPal },

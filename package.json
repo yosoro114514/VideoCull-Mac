@@ -1,7 +1,7 @@
 {
   "name": "videocull",
-  "version": "2.4.0",
-  "description": "High-performance video culling tool for managing large video collections",
+  "version": "2.4.0-mac.1",
+  "description": "Unofficial Apple Silicon macOS fork of VideoCull, originally by StippieDot",
   "author": "StippieDot",
   "license": "AGPL-3.0-only",
   "main": "electron/bootstrap.js",
@@ -32,12 +32,17 @@
     "stress:cache-overcap": "node scripts/cache-overcap-smoke.js",
     "cleanup:cache": "node scripts/cleanup-cache-clutter.js",
     "package": "vite build && electron-builder --win --publish never",
-    "package:store": "node scripts/package-store.js"
+    "package:store": "node scripts/package-store.js",
+    "package:mac": "vite build && electron-builder --config config/electron-builder.mac.cjs --mac --arm64 --publish never",
+    "bundle:mac-media": "node scripts/bundle-mac-media.js",
+    "test:mac": "npm run check:ipc && tsc --noEmit && tsc -p config/tsconfig.electron.json && vitest run tests/src/mac-port.test.ts tests/src/keybinds.test.ts tests/src/keybind-defaults.test.ts tests/src/store.public.test.ts tests/electron/mac-port.test.js tests/electron/media-process.test.js tests/electron/processor.test.js tests/electron/scanner.test.js tests/electron/ipc-guard.test.js tests/electron/renderer-save-flush.test.js tests/electron/graceful-shutdown.test.js && npm run test:profile && npm run test:cache-native",
+    "test:mac:e2e": "npm run build && playwright test tests/e2e/mac-personal.spec.ts tests/e2e/delete-safety.spec.ts tests/e2e/relaunch-persistence.spec.ts tests/e2e/review-shortcuts.spec.ts tests/e2e/smoke.spec.ts tests/e2e/large-library.spec.ts"
   },
   "devEngines": {
     "packageManager": {
       "name": "npm",
-      "version": ">=11.19.0"
+      "version": ">=11.19.0",
+      "onFail": "warn"
     }
   },
   "allowScripts": {
@@ -159,5 +164,19 @@
       "installerSidebar": "build/installerSidebar.bmp",
       "uninstallerSidebar": "build/installerSidebar.bmp"
     }
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yosoro114514/VideoCull-Mac.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yosoro114514/VideoCull-Mac/issues"
+  },
+  "homepage": "https://github.com/yosoro114514/VideoCull-Mac#readme",
+  "contributors": [
+    {
+      "name": "yosoro114514",
+      "url": "https://github.com/yosoro114514"
+    }
+  ]
 }

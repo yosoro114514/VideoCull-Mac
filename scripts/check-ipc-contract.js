@@ -17,7 +17,7 @@ function sorted(values) {
 function extractElectronApiMethods(typesSource) {
   const match = /export interface ElectronAPI\s*\{([\s\S]*?)\n\}/m.exec(typesSource);
   if (!match) throw new Error('Could not find ElectronAPI interface in src/types.ts');
-  return new Set(Array.from(match[1].matchAll(/^  ([A-Za-z0-9_]+):/gm), (item) => item[1]));
+  return new Set(Array.from(match[1].matchAll(/^  ([A-Za-z0-9_]+)\??:/gm), (item) => item[1]));
 }
 
 function extractPreloadMethods(preloadSource) {

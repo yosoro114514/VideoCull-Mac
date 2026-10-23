@@ -65,7 +65,7 @@ and [website](https://videocull.app/).
 
 Instances of abusive, harassing, or otherwise unacceptable behavior may be
 reported to the community leaders responsible for enforcement by contacting the
-project maintainer, [@StippieDot](https://github.com/StippieDot), privately
+project maintainer, [@yosoro114514](https://github.com/yosoro114514), privately
 through the contact options on their GitHub profile. If the report concerns the
 maintainer, you can instead use GitHub's
 [Report content](https://docs.github.com/en/communities/maintaining-your-safety-on-github/reporting-abuse-or-spam)

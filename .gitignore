@@ -30,6 +30,7 @@ dist-ssr
 # Build output (keep installer assets)
 build/*
 !build/videocull.ico
+!build/videocull.icns
 !build/installerSidebar.bmp
 !build/installerHeader.bmp
 !build/installer.nsh
@@ -52,3 +53,19 @@ docs/superpowers/
 
 # Private marketing website source (maintained in its own repository)
 /website/
+
+# Local-only material: never publish videos, credentials, caches or installer backups.
+.env
+.env.*
+!.env.example
+*.pem
+*.p12
+*.pfx
+*.key
+*.db
+*.db-*
+*.sqlite*
+*.dmg
+*.mp4
+*.mov
+*.mkv

@@ -32,10 +32,12 @@ function assertLegalFilesPresent(resourcesPath, exists = fs.existsSync) {
 // Runs after the app folder is assembled and before the installer or Store package is built, so
 // both editions ship the same generated notices.
 async function afterPack(context, dependencies = {}) {
-  if (context.electronPlatformName !== 'win32') return;
-  const executableName = `${context.packager.appInfo.productFilename}.exe`;
-  const executablePath = path.join(context.appOutDir, executableName);
-  const resourcesPath = path.join(context.appOutDir, 'resources');
+  const isMac = context.electronPlatformName === 'darwin';
+  if (!isMac && context.electronPlatformName !== 'win32') return;
+  const name = context.packager.appInfo.productFilename;
+  const bundle = path.join(context.appOutDir, `${name}.app`, 'Contents');
+  const executablePath = isMac ? path.join(bundle, 'MacOS', name) : path.join(context.appOutDir, `${name}.exe`);
+  const resourcesPath = isMac ? path.join(bundle, 'Resources') : path.join(context.appOutDir, 'resources');
   const writeNotices = dependencies.writeNotices ?? writeThirdPartyNotices;
   const checkLegalFiles = dependencies.checkLegalFiles ?? assertLegalFilesPresent;
   const runSmoke = dependencies.runSmoke ?? runPackagedSqliteSmoke;

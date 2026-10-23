@@ -96,7 +96,9 @@ function extractWithTar(zipPath, targetDir) {
   if (result.status !== 0) throw new Error(`tar exited with code ${result.status}`);
 }
 
-if (require.main === module) {
+if (require.main === module && process.platform === 'darwin') {
+  require('./bundle-mac-media').bundleMacMedia();
+} else if (require.main === module) {
   /** @type {ToolchainPin} */
   const pin = JSON.parse(fs.readFileSync(path.join(root, 'config', 'ffmpeg-toolchain.json'), 'utf8'));
   installPinnedFfmpeg(pin, path.join(root, 'vendor', 'ffmpeg'), {
