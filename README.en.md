@@ -6,7 +6,18 @@ This is an **unofficial macOS community fork** of VideoCull, originally develope
 
 Review local video collections with a multi-frame grid, embedded playback, Keep / Delete / Skip decisions, undo, and saved progress. Videos stay local. The interface is currently in English.
 
-**Status:** experimental source release `2.4.0-mac.1`; tested on Apple Silicon with macOS 15. No prebuilt downloads are published by this fork yet. Maintained on a best-effort basis.
+**Status:** experimental preview `2.4.0-mac.2`; tested on Apple Silicon with macOS 15. Maintained on a best-effort basis.
+
+## Download and install
+
+[Download the Apple Silicon DMG and matching source materials](https://github.com/yosoro114514/VideoCull-Mac/releases/tag/v2.4.0-mac.2).
+Open the DMG and drag VideoCull into Applications. No Node.js, Homebrew or separate FFmpeg installation is required.
+
+This preview is **ad-hoc signed and not notarized**. macOS may block the first launch.
+After verifying the origin and SHA-256, check System Settings → Privacy & Security for
+an Open Anyway option. If it remains blocked, report the exact error. See [MAC_RELEASE.md](MAC_RELEASE.md).
+The same release hosts the app source, media dependency sources and Electron/Chromium source materials.
+The media CLI uses FFmpeg under GPL-3.0-or-later; Electron's separate FFmpeg uses LGPL-2.1-or-later.
 
 ## What changed
 
@@ -43,7 +54,7 @@ npm run test:mac:e2e
 npm run package:mac
 ```
 
-Local outputs: `artifacts/packages/mac-arm64/VideoCull.app` and `artifacts/packages/VideoCull-Mac-arm64-2.4.0-mac.1.dmg`. These are ad-hoc signed and **not notarised**. GitHub Actions runs Mac validation without publishing binaries. The inherited Windows publishing jobs are disabled in this fork.
+Local outputs: `artifacts/packages/mac-arm64/VideoCull.app` and `artifacts/packages/VideoCull-Mac-arm64-2.4.0-mac.2.dmg`. These commands make a Homebrew-based personal build. Public releases must use the pinned-source `package:mac:release` workflow and include all source assets; see [MAC_RELEASE.md](MAC_RELEASE.md). GitHub Actions runs Mac validation without publishing binaries. The inherited Windows publishing jobs are disabled in this fork.
 
 Tests use generated media and isolated profiles. Coverage includes mixed-library scanning, failed media, early previews, cache reuse, playback, decisions, undo, persistence, window lifecycle and Trash deletion. GUI tests may leave generated clips in Trash.
 
@@ -69,4 +80,4 @@ Report Mac-fork issues [here](https://github.com/yosoro114514/VideoCull-Mac/issu
 
 Original VideoCull is by **StippieDot and upstream contributors**, whose copyright and history are retained. The original README is preserved in [README_UPSTREAM.md](README_UPSTREAM.md); its download and support links refer to upstream. Existing sponsorship links support **StippieDot**, not the fork maintainer.
 
-Licensed under [AGPL-3.0-only](LICENSE), retaining the upstream [Additional Permission for Extensions](EXTENSION-PERMISSION.md). Third-party components retain their own licenses. See [NOTICE_MAC.md](NOTICE_MAC.md) for dated modification notices and the source-only publication boundary.
+Licensed under [AGPL-3.0-only](LICENSE), retaining the upstream [Additional Permission for Extensions](EXTENSION-PERMISSION.md). Third-party components retain their own licenses. See [NOTICE_MAC.md](NOTICE_MAC.md) for dated modification notices and [MAC_RELEASE.md](MAC_RELEASE.md) for binary/source distribution details.

@@ -6,7 +6,15 @@
 
 用多帧预览快速了解本地视频，再决定保留、删除或跳过。适合整理积累的视频、录屏、相机素材和备份，不需要把视频上传到服务器。
 
-**当前状态：实验性源码版本 `2.4.0-mac.1`。** 已在 Apple Silicon / macOS 15 上验证；暂不发布预编译安装包。界面目前沿用英文。个人维护，欢迎反馈，但不承诺固定更新周期。
+**当前状态：实验性预览版 `2.4.0-mac.2`。** 已在 Apple Silicon / macOS 15 上验证。界面目前沿用英文。个人维护，欢迎反馈，但不承诺固定更新周期。
+
+## 下载与安装
+
+**[下载 Apple Silicon DMG 与配套源码](https://github.com/yosoro114514/VideoCull-Mac/releases/tag/v2.4.0-mac.2)**。打开 DMG 后，把 VideoCull 拖进 Applications；无需安装 Node.js、Homebrew 或 FFmpeg。
+
+此预览版为**临时签名、未公证**，首次启动可能被 macOS 拦截。核对来源和发布页的 SHA-256 后，可在“系统设置 → 隐私与安全性”中查看“仍要打开”；如果系统仍拒绝运行，请反馈错误信息。详见[安装、许可证与重建说明](MAC_RELEASE.md)。
+
+发布页同时提供应用源码、FFmpeg/x264/dav1d 对应源码、Electron/Chromium 相关源码及完整许可材料。媒体处理 FFmpeg 使用 GPL-3.0-or-later；Electron 内的另一份 FFmpeg 使用 LGPL-2.1-or-later。
 
 ## 能做什么
 
@@ -79,7 +87,7 @@ npm run test:mac:e2e
 npm run package:mac
 ```
 
-输出位于 `artifacts/packages/`：`mac-arm64/VideoCull.app` 与 `VideoCull-Mac-arm64-2.4.0-mac.1.dmg`。本地构建为临时签名，未经过 Apple 公证；不要把它当作官方发行包。
+输出位于 `artifacts/packages/`：`mac-arm64/VideoCull.app` 与 `VideoCull-Mac-arm64-2.4.0-mac.2.dmg`。上述命令是 Homebrew 自用构建；公开发行请按 [MAC_RELEASE.md](MAC_RELEASE.md) 使用固定源码构建及 `package:mac:release`，并附上全部源码资产。
 
 回归测试使用临时生成的视频和独立配置，覆盖扫描排除、坏文件跳过、首批预览、缓存复用、六帧预览、播放、保留／删除／跳过、撤销、关窗恢复、退出保存和废纸篓删除。界面测试可能在废纸篓留下合成测试视频。
 
@@ -107,4 +115,4 @@ GitHub Actions 配置了 Mac 检查，不上传安装包、媒体或缓存。上
 
 继续使用 [AGPL-3.0-only](LICENSE)，并保留上游的[扩展附加许可](EXTENSION-PERMISSION.md)。第三方组件各自适用其许可证。赞助链接仍指向**原作者 StippieDot**。
 
-首发仅公开源码，不分发预编译二进制。未来公开安装包前，需要整理与随包 FFmpeg／动态库匹配的对应源码、许可和构建材料，并完成面向用户的签名、公证与安装验证。更多说明见 [NOTICE_MAC.md](NOTICE_MAC.md)。
+`mac.1` 首发仅公开源码；`mac.2` 增加未公证的 DMG 预览版，公开包使用固定源码构建的媒体工具。对应源码、许可、构建脚本和校验值与安装包一起分发。更多说明见 [NOTICE_MAC.md](NOTICE_MAC.md) 和 [MAC_RELEASE.md](MAC_RELEASE.md)。

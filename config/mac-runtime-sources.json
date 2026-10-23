@@ -1,0 +1,48 @@
+{
+  "electronVersion": "44.7.0",
+  "chromiumVersion": "152.0.7977.130",
+  "sources": [
+    {
+      "component": "Electron",
+      "version": "44.7.0",
+      "file": "electron-v44.7.0.tar.gz",
+      "url": "https://codeload.github.com/electron/electron/tar.gz/refs/tags/v44.7.0",
+      "sha256": "98ed707611d37be363a29ded8ebc7a9dde21ca8e15448f08f212e874142e1124"
+    },
+    {
+      "component": "Chromium (includes Blink and vendored third-party sources)",
+      "version": "152.0.7977.130",
+      "file": "chromium-152.0.7977.130.tar.gz",
+      "url": "https://codeload.github.com/chromium/chromium/tar.gz/refs/tags/152.0.7977.130",
+      "sha256": "47742d69af00b6147c16201a2feac7bfac1ecc15d43b9a221146ac9434a3d751"
+    },
+    {
+      "component": "Chromium FFmpeg",
+      "version": "2b68d2babae73714846961fb0ee47e3b3d2e39a9",
+      "file": "chromium-ffmpeg-2b68d2b.tar.gz",
+      "url": "https://chromium.googlesource.com/chromium/third_party/ffmpeg/+archive/2b68d2babae73714846961fb0ee47e3b3d2e39a9.tar.gz",
+      "sha256": "6c8d86221a220b7098a43eabdb862c82456fe362cbf086d0ccc4527ec544118c"
+    },
+    {
+      "file": "chromium-eigen-d53ac338.tar.gz",
+      "url": "https://chromium.googlesource.com/external/gitlab.com/libeigen/eigen.git/+archive/d53ac33805ba0a23fa139adaf24227fb6707e6fa.tar.gz",
+      "sha256": "bd2803c39dcd2a304645e4cedf1aa8c04f14964eaeb13bb938174d578035657e",
+      "component": "Eigen",
+      "version": "d53ac33805ba0a23fa139adaf24227fb6707e6fa"
+    },
+    {
+      "file": "chromium-icu-d578f2e8.tar.gz",
+      "url": "https://chromium.googlesource.com/chromium/deps/icu.git/+archive/d578f2e8b7bd5938e21cfb6bf15c079e0aa5b738.tar.gz",
+      "sha256": "6381d3886d72b745ecb2f4ed59d12d65b2a5aab1666295fea937bed7193e8920",
+      "component": "ICU",
+      "version": "d578f2e8b7bd5938e21cfb6bf15c079e0aa5b738"
+    },
+    {
+      "file": "node-v24.21.0.tar.gz",
+      "url": "https://nodejs.org/dist/v24.21.0/node-v24.21.0.tar.gz",
+      "sha256": "622424efb5dc0c26c93fbb619ff10737ee289c605b837c88778e186925d82777",
+      "component": "Node.js",
+      "version": "24.21.0"
+    }
+  ]
+}

@@ -69,3 +69,5 @@ docs/superpowers/
 *.mp4
 *.mov
 *.mkv
+__pycache__/
+*.pyc

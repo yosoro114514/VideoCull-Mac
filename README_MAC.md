@@ -34,7 +34,7 @@ npm run package:mac
 
 `npm ci` 的安装脚本安装 Electron，并将本机 Homebrew FFmpeg/FFprobe 及其非系统动态库复制到 `vendor/ffmpeg`，重写相对加载路径、临时签名并保留许可文本和来源摘要。Homebrew 默认目录为 `/opt/homebrew`，可通过 `VIDEOCULL_HOMEBREW_PREFIX` 指定。更新本机视频工具后可执行 `npm run bundle:mac-media`。
 
-输出：`artifacts/packages/mac-arm64/VideoCull.app` 和 `artifacts/packages/VideoCull-Mac-arm64-2.4.0-mac.1.dmg`。打包过程会在真正的应用包内验证 SQLite 主进程及后台线程读写。
+输出：`artifacts/packages/mac-arm64/VideoCull.app` 和 `artifacts/packages/VideoCull-Mac-arm64-2.4.0-mac.2.dmg`。打包过程会在真正的应用包内验证 SQLite 主进程及后台线程读写。上述为自用构建；公开发布使用 [MAC_RELEASE.md](MAC_RELEASE.md) 中的固定源码流程。
 
 验证打包后的完整程序：
 
@@ -69,4 +69,4 @@ Mac 专用测试覆盖六帧预览、中文及特殊字符路径、内嵌播放�
 
 抽样性能对比：本机 12 个真实视频共约 15.06 GB，生成 72 张预览，旧单路方式约 8.22 秒，4 路任务／每路 4 解码线程约 4.39 秒。只代表这组本地、已预热文件的抽帧速度，不代表整库首次处理时间。
 
-公开仓库：https://github.com/yosoro114514/VideoCull-Mac 。首次公开版本仅发布源码，不提供面向公众的预编译安装包。构建脚本中的 Homebrew 依赖随本机安装变化，尚不保证逐字节可复现。已验证 macOS 15 / Apple Silicon；其他系统版本不作兼容承诺。
+公开仓库：https://github.com/yosoro114514/VideoCull-Mac 。`mac.1` 首发为源码版，`mac.2` 增加未公证安装包预览版及配套源码材料。Homebrew 自用构建与公开发行构建分开；后者使用固定源码和哈希，但不保证跨 Xcode/SDK 逐字节一致。已验证 macOS 15 / Apple Silicon；其他系统版本不作兼容承诺。下载和安装说明见 [MAC_RELEASE.md](MAC_RELEASE.md)。

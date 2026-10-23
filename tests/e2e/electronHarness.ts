@@ -49,6 +49,8 @@ export async function seedRecentDirectory(userDataDir: string, directory: string
 export async function launchElectronApp(userDataDir: string): Promise<ElectronApplication> {
   const launchEnv = { ...process.env };
   delete launchEnv.ELECTRON_RUN_AS_NODE;
+  // Fixtures may use the release toolchain; the packaged app must resolve its own resources.
+  if (process.env.VC_TEST_EXECUTABLE) delete launchEnv.VIDEOCULL_FFMPEG_DIR;
 
   return electron.launch({
     executablePath: process.env.VC_TEST_EXECUTABLE || electronPath,

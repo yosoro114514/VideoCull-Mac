@@ -22,7 +22,7 @@ Modifications made on **2026-10-22 and 2026-10-23**, published as source version
 
 The fork remains under AGPL-3.0-only with the upstream Additional Permission for Extensions. Copyright in modifications belongs to their respective contributors. Original branding/assets remain attributed to their original authors; no claim of exclusive ownership over the upstream work is made.
 
-## Third-party software and source-only publication
+## Initial source-only publication (mac.1)
 
 This initial public version distributes source code, build recipes and the existing upstream assets. It does **not** publish the local application bundles, DMGs, FFmpeg executables, shared libraries, caches, private videos, or test outputs.
 
@@ -31,3 +31,16 @@ Local build scripts copy the builder's Homebrew FFmpeg and dependent libraries, 
 Before publishing binary releases, the distributor must review each included component's license and provide the matching Corresponding Source and build materials as required, including the GPL-enabled FFmpeg build and relevant libraries. Binary release work also includes reproducible dependency inputs, release verification, macOS signing and notarisation. No prebuilt release is promised by this source publication.
 
 Upstream documentation screenshots use Blender Open Movie footage under the applicable attribution licenses; retain the credits alongside any reused screenshots. Existing donation links are explicitly for the original author, StippieDot.
+
+## Binary preview (mac.2, 2026-10-23)
+
+Version **2.4.0-mac.2** adds a public Apple Silicon DMG preview, ad-hoc signed and not
+Apple-notarized. Public packages use FFmpeg 9.0.1, x264 b35605a and dav1d 1.5.4 built
+from fixed, checksum-verified sources, with only Apple system dynamic dependencies.
+The Homebrew copying script remains available for personal developer builds only.
+
+Added source input pins, media build/verification scripts, a source-asset assembler,
+matching Electron/Chromium source materials, packaged Electron license files, and
+installation/rebuild instructions. All binary releases must carry the source assets
+and notices listed in MAC_RELEASE.md on the same release. Original author attribution,
+the AGPL license and the Additional Permission for Extensions remain unchanged.

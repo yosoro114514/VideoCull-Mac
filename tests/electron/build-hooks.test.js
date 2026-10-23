@@ -43,20 +43,38 @@ test('packaging fails when a legal file is missing from resources', () => {
 });
 
 test('packaged smoke runner isolates module resolution and fails the build on a non-zero result', () => {
+  const releaseDir = path.resolve('release');
+  const executable = path.join(releaseDir, 'VideoCull.exe');
+  const resources = path.join(releaseDir, 'resources');
   let invocation = null;
   const spawn = (executablePath, args, options) => {
     invocation = { executablePath, args, options };
     return { status: 0 };
   };
-  runPackagedSqliteSmoke('D:\\release\\VideoCull.exe', 'D:\\release\\resources', spawn);
+  runPackagedSqliteSmoke(executable, resources, spawn);
 
-  assert.equal(invocation.options.cwd, 'D:\\release');
+  assert.equal(invocation.options.cwd, releaseDir);
   assert.equal(invocation.options.env.ELECTRON_RUN_AS_NODE, '1');
   assert.equal(invocation.options.env.NODE_PATH, undefined);
   assert.equal(invocation.options.env.NODE_OPTIONS, undefined);
-  assert.deepEqual(invocation.args.slice(1), ['D:\\release\\resources']);
+  assert.deepEqual(invocation.args.slice(1), [resources]);
   assert.throws(
-    () => runPackagedSqliteSmoke('D:\\release\\VideoCull.exe', 'D:\\release\\resources', () => ({ status: 7 })),
+    () => runPackagedSqliteSmoke(executable, resources, () => ({ status: 7 })),
     /exit code 7/,
   );
+});
+
+test('Mac afterPack checks notices and runs SQLite inside the app bundle', async () => {
+  const calls = [];
+  const appOutDir = path.resolve('mac-arm64');
+  await afterPack({ electronPlatformName: 'darwin', appOutDir,
+    packager: { appInfo: { productFilename: 'VideoCull' } } }, {
+    writeNotices: p => calls.push(['notices', p]),
+    checkLegalFiles: p => calls.push(['legal', p]),
+    runSmoke: (exe, p) => calls.push(['smoke', exe, p]),
+  });
+  const contents = path.join(appOutDir, 'VideoCull.app', 'Contents');
+  const resources = path.join(contents, 'Resources');
+  assert.deepEqual(calls, [['notices', resources], ['legal', resources],
+    ['smoke', path.join(contents, 'MacOS', 'VideoCull'), resources]]);
 });
