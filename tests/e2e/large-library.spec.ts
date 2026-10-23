@@ -17,6 +17,7 @@ test('mixed library excludes sources, skips failed media, produces early preview
     await fs.writeFile(path.join(mediaDir, 'node_modules', 'unwanted.mp4'), 'not media');
     await seedRecentDirectory(profile, mediaDir);
     app = await launchElectronApp(profile);
+    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(900, 600));
     await app.evaluate(({ app }) => {
       const load = process.getBuiltinModule("module").createRequire(`${app.getAppPath()}/package.json`);
       const media = load("./electron/media-process.js");
@@ -42,6 +43,7 @@ test('mixed library excludes sources, skips failed media, produces early preview
     expect(await page.getByText('source.ts', { exact: true }).count()).toBe(0);
     await app.close();
     app = await launchElectronApp(profile);
+    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(900, 600));
     await app.evaluate(({ app }) => {
       const load = process.getBuiltinModule("module").createRequire(`${app.getAppPath()}/package.json`);
       const media = load("./electron/media-process.js");
@@ -55,7 +57,9 @@ test('mixed library excludes sources, skips failed media, produces early preview
       }
     });
     const reopened = await openSeededRecentFolder(app, names[0]);
-    await expect(reopened.locator('.video-card .thumb-img-loaded').first()).toBeVisible();
+    const cachedCard = reopened.locator('.video-card').filter({ has: reopened.getByText(names[0], { exact: true }) });
+    await cachedCard.scrollIntoViewIfNeeded();
+    await expect(cachedCard.locator('.thumb-img-loaded')).toHaveCount(6);
     await expect(reopened.locator('.title-bar-status-pill')).toHaveCount(0);
     expect(await app.evaluate(() => (globalThis as any).__unexpectedMediaWork)).toEqual([]);
   } finally {

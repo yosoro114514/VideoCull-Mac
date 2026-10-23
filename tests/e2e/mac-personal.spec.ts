@@ -11,8 +11,14 @@ test('Mac workflow: six previews, keep/delete/skip, undo, Command keys, close/re
   let app: ElectronApplication | undefined;
   try {
     app = await launchElectronApp(profile);
+    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(900, 600));
     let page = await openSeededRecentFolder(app);
-    await expect(page.locator('.video-card .thumb-img-loaded')).toHaveCount(18);
+    // Cards load previews near the viewport; verify each card after scrolling to it.
+    for (const name of ['alpha.mp4', 'beta.mp4', 'gamma 中文 #3.mp4']) {
+      const card = page.locator('.video-card').filter({ has: page.getByText(name, { exact: true }) });
+      await card.scrollIntoViewIfNeeded();
+      await expect(card.locator('.thumb-img-loaded')).toHaveCount(6);
+    }
     await page.getByText('alpha.mp4').click();
     await expect(page.locator('.review-thumbs .thumb-img-loaded')).toHaveCount(6);
     // Chromium-delivered Command combinations must never leak into plain decision keys.
@@ -51,10 +57,15 @@ test('Mac workflow: six previews, keep/delete/skip, undo, Command keys, close/re
     await page.screenshot({ path: 'artifacts/mac-preview/grid.png' });
     await app.close();
     app = await launchElectronApp(profile);
+    await app.evaluate(({ BrowserWindow }) => BrowserWindow.getAllWindows()[0].setSize(900, 600));
     page = await openSeededRecentFolder(app);
     await expect(page.locator('button[title="Show keep videos"]')).toContainText('1');
     await expect(page.locator('button[title="Show skipped videos"]')).toContainText('1');
-    await expect(page.locator('.video-card .thumb-img-loaded')).toHaveCount(18);
+    for (const name of ['alpha.mp4', 'beta.mp4', 'gamma 中文 #3.mp4']) {
+      const card = page.locator('.video-card').filter({ has: page.getByText(name, { exact: true }) });
+      await card.scrollIntoViewIfNeeded();
+      await expect(card.locator('.thumb-img-loaded')).toHaveCount(6);
+    }
     await page.getByText('gamma 中文 #3.mp4').click();
     await page.locator('.review-actions').getByRole('button', { name: /^Play/ }).click();
     const video = page.locator('.review-video-skin video');
